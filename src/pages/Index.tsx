@@ -1,7 +1,8 @@
 import { useQRGenerator } from "@/hooks/useQRGenerator";
 import ControlsPanel from "@/components/ControlsPanel";
 import PreviewPanel from "@/components/PreviewPanel";
-import { QrCode } from "lucide-react";
+import { QrCode, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 
 const Index = () => {
   const {
@@ -15,6 +16,7 @@ const Index = () => {
     generate,
     download
   } = useQRGenerator();
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,7 +29,17 @@ const Index = () => {
             </div>
             <span className="text-lg font-semibold text-foreground tracking-tight">QNova</span>
           </div>
-          <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              <Sun className="w-4 h-4 hidden dark:block" />
+              <Moon className="w-4 h-4 block dark:hidden" />
+            </button>
+          </div>
         </div>
       </header>
 
