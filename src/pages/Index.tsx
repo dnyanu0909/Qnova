@@ -25,7 +25,7 @@ const Index = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <QrCode className="w-4.5 h-4.5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground tracking-tight">QR Studio</span>
+            <span className="text-lg font-semibold text-foreground tracking-tight">QNova</span>
           </div>
           <span className="text-xs text-muted-foreground hidden sm:block">Fast, beautiful QR codes</span>
         </div>
