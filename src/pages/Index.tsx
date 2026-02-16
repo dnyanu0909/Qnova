@@ -13,7 +13,7 @@ const Index = () => {
     updateData,
     updateOptions,
     generate,
-    download,
+    download
   } = useQRGenerator();
 
   return (
@@ -25,9 +25,9 @@ const Index = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <QrCode className="w-4.5 h-4.5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground tracking-tight">QNova</span>
+            <span className="text-lg font-semibold text-foreground tracking-tight">QR Studio</span>
           </div>
-          <span className="text-xs text-muted-foreground hidden sm:block">Fast, beautiful QR codes</span>
+          <span className="text-xs text-muted-foreground hidden sm:block">Fast, personalized QR codes</span>
         </div>
       </header>
 
@@ -49,17 +49,17 @@ const Index = () => {
             isGenerating={isGenerating}
             onUpdateData={updateData}
             onUpdateOptions={updateOptions}
-            onGenerate={generate}
-          />
+            onGenerate={generate} />
+
           <PreviewPanel
             qrDataUrl={qrDataUrl}
             error={error}
-            onDownload={download}
-          />
+            onDownload={download} />
+
         </div>
       </main>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
