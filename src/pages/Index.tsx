@@ -27,7 +27,7 @@ const Index = () => {
             </div>
             <span className="text-lg font-semibold text-foreground tracking-tight">QNova</span>
           </div>
-          <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalized QR codes</span>
+          <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
         </div>
       </header>
 
