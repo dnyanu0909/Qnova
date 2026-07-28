@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface MicroPageButton {
   label: string;
   url: string;
+  [key: string]: string;
 }
 
 export interface MicroPageSocials {
@@ -11,6 +12,7 @@ export interface MicroPageSocials {
   linkedin: string;
   twitter: string;
   instagram: string;
+  [key: string]: string;
 }
 
 export interface MicroPageForm {
