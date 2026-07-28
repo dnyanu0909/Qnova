@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      micro_pages: {
+        Row: {
+          accent: string
+          avatar_url: string | null
+          bio: string | null
+          buttons: Json
+          created_at: string
+          email: string | null
+          full_name: string
+          headline: string | null
+          id: string
+          phone: string | null
+          slug: string
+          socials: Json
+        }
+        Insert: {
+          accent?: string
+          avatar_url?: string | null
+          bio?: string | null
+          buttons?: Json
+          created_at?: string
+          email?: string | null
+          full_name: string
+          headline?: string | null
+          id?: string
+          phone?: string | null
+          slug: string
+          socials?: Json
+        }
+        Update: {
+          accent?: string
+          avatar_url?: string | null
+          bio?: string | null
+          buttons?: Json
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          headline?: string | null
+          id?: string
+          phone?: string | null
+          slug?: string
+          socials?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
