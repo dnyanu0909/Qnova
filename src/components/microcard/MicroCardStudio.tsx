@@ -104,7 +104,7 @@ export default function MicroCardStudio() {
             disabled={isPublishing}
             className="w-full py-3.5 px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
           >
-            {isPublishing ? "Publishing..." : slug ? "Publish updated page" : "Publish page & generate QR"}
+            {isPublishing ? "Publishing..." : slug ? "Publish new version" : "Publish page & generate QR"}
           </button>
 
           {slug && (
