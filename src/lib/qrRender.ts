@@ -14,6 +14,7 @@ export interface QrRenderOptions {
   frameLabel: string;
   logoDataUrl: string | null;
   logoWhiteBg: boolean;
+  gradientTo: string | null;
 }
 
 const MARGIN = 4;
@@ -90,7 +91,13 @@ export function buildQrSvg(text: string, o: QrRenderOptions): string {
       ? `<rect x="0.6" y="0.6" width="${dim - 1.2}" height="${height - 1.2}" rx="${bgRadius}" ry="${bgRadius}" fill="none" stroke="${o.eyeColor}" stroke-width="1.2"/>`
       : "";
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${height}" shape-rendering="geometricPrecision">${bg}<g fill="${o.fgColor}">${dots}</g>${eyes}${logo}${label}${border}</svg>`;
+  const gradId = "qnova-grad";
+  const defs = o.gradientTo
+    ? `<defs><linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${o.fgColor}"/><stop offset="100%" stop-color="${o.gradientTo}"/></linearGradient></defs>`
+    : "";
+  const dotFill = o.gradientTo ? `url(#${gradId})` : o.fgColor;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${height}" shape-rendering="geometricPrecision">${defs}${bg}<g fill="${dotFill}">${dots}</g>${eyes}${logo}${label}${border}</svg>`;
 }
 
 function escapeXml(s: string) {
