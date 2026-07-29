@@ -1,5 +1,6 @@
-import { useState, useCallback } from "react";
-import QRCode from "qrcode";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CornerStyle, DotStyle, FrameStyle, QrRenderOptions } from "@/lib/qrRender";
+import { buildQrSvg, svgToDataUrl } from "@/lib/qrRender";
 
 export type QRType = "text" | "url" | "wifi" | "contact";
 
@@ -11,11 +12,16 @@ export interface QRData {
   contact: { name: string; phone: string; email: string };
 }
 
-export interface QROptions {
-  fgColor: string;
-  bgColor: string;
+export interface QROptions extends QrRenderOptions {
   size: number;
-  logoFile: File | null;
+  highRes: boolean;
+}
+
+export interface QRTemplate {
+  id: string;
+  label: string;
+  swatch: string[];
+  patch: Partial<QROptions>;
 }
 
 const initialData: QRData = {
@@ -29,20 +35,58 @@ const initialData: QRData = {
 const initialOptions: QROptions = {
   fgColor: "#1e1b4b",
   bgColor: "#ffffff",
-  size: 300,
-  logoFile: null,
+  eyeColor: "#1e1b4b",
+  gradientTo: null,
+  dotStyle: "rounded",
+  cornerStyle: "rounded",
+  frame: "none",
+  frameLabel: "Scan me",
+  logoDataUrl: null,
+  logoWhiteBg: true,
+  size: 512,
+  highRes: false,
 };
 
-function buildQRString(data: QRData): string {
+export const templates: QRTemplate[] = [
+  {
+    id: "minimal",
+    label: "Minimal",
+    swatch: ["#ffffff", "#1e1b4b"],
+    patch: { fgColor: "#1e1b4b", bgColor: "#ffffff", eyeColor: "#1e1b4b", gradientTo: null, dotStyle: "square", cornerStyle: "square", frame: "none" },
+  },
+  {
+    id: "gradient",
+    label: "Gradient",
+    swatch: ["#6366f1", "#ec4899"],
+    patch: { fgColor: "#6366f1", gradientTo: "#ec4899", bgColor: "#ffffff", eyeColor: "#6366f1", dotStyle: "dots", cornerStyle: "circle", frame: "card" },
+  },
+  {
+    id: "dark",
+    label: "Dark Mode",
+    swatch: ["#0b1020", "#a5b4fc"],
+    patch: { fgColor: "#e2e8f0", bgColor: "#0b1020", eyeColor: "#a5b4fc", gradientTo: null, dotStyle: "rounded", cornerStyle: "rounded", frame: "card" },
+  },
+  {
+    id: "contrast",
+    label: "High Contrast",
+    swatch: ["#ffffff", "#000000"],
+    patch: { fgColor: "#000000", bgColor: "#ffffff", eyeColor: "#000000", gradientTo: null, dotStyle: "square", cornerStyle: "square", frame: "label" },
+  },
+];
+
+export function buildQRString(data: QRData): string {
   switch (data.type) {
     case "text":
       return data.text;
     case "url":
       return data.url;
     case "wifi":
-      return `WIFI:T:${data.wifi.encryption};S:${data.wifi.ssid};P:${data.wifi.password};;`;
-    case "contact":
-      return `BEGIN:VCARD\nVERSION:3.0\nFN:${data.contact.name}\nTEL:${data.contact.phone}\nEMAIL:${data.contact.email}\nEND:VCARD`;
+      return data.wifi.ssid ? `WIFI:T:${data.wifi.encryption};S:${data.wifi.ssid};P:${data.wifi.password};;` : "";
+    case "contact": {
+      const c = data.contact;
+      if (!c.name && !c.phone && !c.email) return "";
+      return `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.phone}\nEMAIL:${c.email}\nEND:VCARD`;
+    }
     default:
       return "";
   }
@@ -51,8 +95,7 @@ function buildQRString(data: QRData): string {
 export function useQRGenerator() {
   const [data, setData] = useState<QRData>(initialData);
   const [options, setOptions] = useState<QROptions>(initialOptions);
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [templateId, setTemplateId] = useState<string>("minimal");
   const [error, setError] = useState<string>("");
 
   const updateData = useCallback(<K extends keyof QRData>(key: K, value: QRData[K]) => {
@@ -63,75 +106,44 @@ export function useQRGenerator() {
     setOptions((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const generate = useCallback(async () => {
-    const qrString = buildQRString(data);
-    if (!qrString.trim()) {
-      setError("Please fill in the required fields before generating.");
-      return;
-    }
+  const applyTemplate = useCallback((id: string) => {
+    const tpl = templates.find((t) => t.id === id);
+    if (!tpl) return;
+    setTemplateId(id);
+    setOptions((prev) => ({ ...prev, ...tpl.patch }));
+  }, []);
 
-    setError("");
-    setIsGenerating(true);
+  const value = buildQRString(data);
+  const hasContent = value.trim().length > 0;
 
+  const svg = useMemo(() => {
+    if (!hasContent) return "";
     try {
-      const canvas = document.createElement("canvas");
-      await QRCode.toCanvas(canvas, qrString, {
-        width: options.size,
-        margin: 2,
-        color: {
-          dark: options.fgColor,
-          light: options.bgColor,
-        },
-        errorCorrectionLevel: "H",
-      });
-
-      if (options.logoFile) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          const img = new Image();
-          const logoUrl = URL.createObjectURL(options.logoFile);
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              const logoSize = options.size * 0.2;
-              const x = (canvas.width - logoSize) / 2;
-              const y = (canvas.height - logoSize) / 2;
-              ctx.fillStyle = options.bgColor;
-              ctx.fillRect(x - 4, y - 4, logoSize + 8, logoSize + 8);
-              ctx.drawImage(img, x, y, logoSize, logoSize);
-              URL.revokeObjectURL(logoUrl);
-              resolve();
-            };
-            img.onerror = reject;
-            img.src = logoUrl;
-          });
-        }
-      }
-
-      setQrDataUrl(canvas.toDataURL("image/png"));
+      return buildQrSvg(value, options);
     } catch {
-      setError("Failed to generate QR code. Please check your input.");
-    } finally {
-      setIsGenerating(false);
+      return "";
     }
-  }, [data, options]);
+  }, [value, options, hasContent]);
 
-  const download = useCallback(() => {
-    if (!qrDataUrl) return;
-    const link = document.createElement("a");
-    link.download = `qr-code-${Date.now()}.png`;
-    link.href = qrDataUrl;
-    link.click();
-  }, [qrDataUrl]);
+  useEffect(() => {
+    if (hasContent && !svg) setError("This content is too long to encode in a QR code.");
+    else setError("");
+  }, [hasContent, svg]);
+
+  const previewUrl = svg ? svgToDataUrl(svg) : "";
+  const exportSize = options.highRes ? Math.max(options.size, 2480) : options.size;
 
   return {
     data,
     options,
-    qrDataUrl,
-    isGenerating,
+    templateId,
+    svg,
+    previewUrl,
+    exportSize,
+    hasContent,
     error,
     updateData,
     updateOptions,
-    generate,
-    download,
+    applyTemplate,
   };
 }
