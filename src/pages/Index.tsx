@@ -12,13 +12,14 @@ const Index = () => {
   const {
     data,
     options,
-    qrDataUrl,
-    isGenerating,
+    templateId,
+    svg,
+    previewUrl,
+    exportSize,
     error,
     updateData,
     updateOptions,
-    generate,
-    download
+    applyTemplate
   } = useQRGenerator();
   const { theme, setTheme } = useTheme();
   const [mode, setMode] = useState<Mode>("qr");
@@ -85,19 +86,21 @@ const Index = () => {
         {mode === "card" ? (
           <MicroCardStudio />
         ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] gap-6 lg:gap-8 items-start">
           <ControlsPanel
             data={data}
             options={options}
-            isGenerating={isGenerating}
+            templateId={templateId}
             onUpdateData={updateData}
             onUpdateOptions={updateOptions}
-            onGenerate={generate} />
+            onApplyTemplate={applyTemplate} />
 
           <PreviewPanel
-            qrDataUrl={qrDataUrl}
-            error={error}
-            onDownload={download} />
+            previewUrl={previewUrl}
+            svg={svg}
+            exportSize={exportSize}
+            highRes={options.highRes}
+            error={error} />
 
         </div>
         )}
