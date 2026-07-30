@@ -2,6 +2,8 @@ import { useQRGenerator } from "@/hooks/useQRGenerator";
 import ControlsPanel from "@/components/ControlsPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import MicroCardStudio from "@/components/microcard/MicroCardStudio";
+import PresetBar from "@/components/PresetBar";
+import DestinationPreview from "@/components/DestinationPreview";
 import { QrCode, Sun, Moon, IdCard } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
@@ -17,6 +19,7 @@ const Index = () => {
     previewUrl,
     exportSize,
     error,
+    shield,
     updateData,
     updateOptions,
     applyTemplate
@@ -86,22 +89,32 @@ const Index = () => {
         {mode === "card" ? (
           <MicroCardStudio />
         ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] gap-6 lg:gap-8 items-start">
-          <ControlsPanel
-            data={data}
-            options={options}
-            templateId={templateId}
-            onUpdateData={updateData}
-            onUpdateOptions={updateOptions}
-            onApplyTemplate={applyTemplate} />
+        <div className="space-y-6 lg:space-y-8">
+          <PresetBar value={data.type} onChange={(v) => updateData("type", v)} />
 
-          <PreviewPanel
-            previewUrl={previewUrl}
-            svg={svg}
-            exportSize={exportSize}
-            highRes={options.highRes}
-            error={error} />
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] gap-6 lg:gap-8 items-start">
+            <ControlsPanel
+              data={data}
+              options={options}
+              templateId={templateId}
+              onUpdateData={updateData}
+              onUpdateOptions={updateOptions}
+              onApplyTemplate={applyTemplate} />
 
+            <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+              <div className="glass-card p-5 sm:p-6 lg:p-8 flex justify-center">
+                <DestinationPreview data={data} />
+              </div>
+
+              <PreviewPanel
+                previewUrl={previewUrl}
+                svg={svg}
+                exportSize={exportSize}
+                highRes={options.highRes}
+                error={error}
+                shield={shield} />
+            </div>
+          </div>
         </div>
         )}
       </main>
