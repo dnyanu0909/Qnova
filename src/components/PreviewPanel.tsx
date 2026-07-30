@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Download, QrCode, Copy, Check, Printer } from "lucide-react";
 import { downloadBlob, svgToPngBlob } from "@/lib/qrRender";
 import { toast } from "sonner";
+import ScannabilityMeter from "@/components/ScannabilityMeter";
+import type { ScannabilityResult } from "@/lib/scannability";
 
 interface PreviewPanelProps {
   previewUrl: string;
@@ -9,9 +11,10 @@ interface PreviewPanelProps {
   exportSize: number;
   highRes: boolean;
   error: string;
+  shield: ScannabilityResult;
 }
 
-export default function PreviewPanel({ previewUrl, svg, exportSize, highRes, error }: PreviewPanelProps) {
+export default function PreviewPanel({ previewUrl, svg, exportSize, highRes, error, shield }: PreviewPanelProps) {
   const [copied, setCopied] = useState(false);
   const ready = Boolean(svg);
 
@@ -65,6 +68,10 @@ export default function PreviewPanel({ previewUrl, svg, exportSize, highRes, err
               <span className="text-sm font-medium">No QR code yet</span>
             </div>
           )}
+        </div>
+
+        <div className="w-full max-w-[340px]">
+          <ScannabilityMeter result={shield} />
         </div>
 
         <div className="w-full max-w-[340px] space-y-3">
