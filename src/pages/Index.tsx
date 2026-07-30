@@ -60,7 +60,7 @@ const Index = () => {
           </h1>
           <p className="mt-2 text-muted-foreground text-base lg:text-lg max-w-lg mx-auto">
             {mode === "qr"
-              ? "Create customizable QR codes for URLs, text, WiFi, and contacts in seconds."
+              ? "Pick a preset, build the destination live, and export a scan-proof QR code in seconds."
               : "Build a sleek micro-landing page and share it with a single scannable QR code."}
           </p>
 
