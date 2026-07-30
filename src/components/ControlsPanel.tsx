@@ -1,16 +1,9 @@
-import { QRData, QROptions, QRType, templates } from "@/hooks/useQRGenerator";
+import { QRData, QROptions, templates, SocialLink, MenuItem } from "@/hooks/useQRGenerator";
 import type { CornerStyle, DotStyle, FrameStyle } from "@/lib/qrRender";
 import { fileToResizedDataUrl } from "@/lib/imageResize";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { QrCode, Globe, Wifi, Contact, Palette, Type, Settings2, Trash2 } from "lucide-react";
-
-const qrTypes: { value: QRType; label: string; icon: React.ReactNode }[] = [
-  { value: "url", label: "URL", icon: <Globe className="w-4 h-4" /> },
-  { value: "contact", label: "vCard", icon: <Contact className="w-4 h-4" /> },
-  { value: "text", label: "Text", icon: <Type className="w-4 h-4" /> },
-  { value: "wifi", label: "Wi-Fi", icon: <Wifi className="w-4 h-4" /> },
-];
+import { QrCode, Palette, Settings2, Trash2, Plus } from "lucide-react";
 
 const dotStyles: { value: DotStyle; label: string }[] = [
   { value: "square", label: "Square" },
@@ -29,6 +22,10 @@ const frames: { value: FrameStyle; label: string }[] = [
   { value: "card", label: "Card" },
   { value: "label", label: "Caption" },
 ];
+
+const frameLabels = ["Scan Me", "Connect", "View Menu", "Free Wi-Fi"];
+
+const networks = ["instagram", "linkedin", "youtube", "github"];
 
 const inputClass =
   "w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground input-focus";
@@ -50,6 +47,9 @@ export default function ControlsPanel({
   onUpdateOptions,
   onApplyTemplate,
 }: ControlsPanelProps) {
+  const setSocialLinks = (links: SocialLink[]) => onUpdateData("social", { ...data.social, links });
+  const setMenuItems = (items: MenuItem[]) => onUpdateData("menu", { ...data.menu, items });
+
   return (
     <div className="glass-card p-5 sm:p-6 lg:p-8">
       <Tabs defaultValue="content" className="w-full">
@@ -67,23 +67,6 @@ export default function ControlsPanel({
 
         {/* CONTENT */}
         <TabsContent value="content" className="space-y-5 pt-6">
-          <div className="grid grid-cols-4 gap-2">
-            {qrTypes.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => onUpdateData("type", t.value)}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border text-xs font-medium transition-all duration-200 ${
-                  data.type === t.value
-                    ? "border-primary bg-primary/5 text-primary shadow-sm"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-
           {data.type === "url" && (
             <Field label="Destination URL">
               <input
@@ -96,16 +79,26 @@ export default function ControlsPanel({
             </Field>
           )}
 
-          {data.type === "text" && (
-            <Field label="Text content">
-              <textarea
-                value={data.text}
-                onChange={(e) => onUpdateData("text", e.target.value)}
-                placeholder="Enter your text here..."
-                rows={4}
-                className={`${inputClass} resize-none`}
-              />
-            </Field>
+          {data.type === "pdf" && (
+            <>
+              <Field label="Document title">
+                <input
+                  value={data.pdf.title}
+                  onChange={(e) => onUpdateData("pdf", { ...data.pdf, title: e.target.value })}
+                  placeholder="Spring Catalogue 2026"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Document link (PDF, Docs, Drive…)">
+                <input
+                  type="url"
+                  value={data.pdf.url}
+                  onChange={(e) => onUpdateData("pdf", { ...data.pdf, url: e.target.value })}
+                  placeholder="https://files.example.com/catalogue.pdf"
+                  className={inputClass}
+                />
+              </Field>
+            </>
           )}
 
           {data.type === "wifi" && (
@@ -127,7 +120,7 @@ export default function ControlsPanel({
                   className={inputClass}
                 />
               </Field>
-              <Field label="Encryption">
+              <Field label="Security type">
                 <select
                   value={data.wifi.encryption}
                   onChange={(e) =>
@@ -135,11 +128,17 @@ export default function ControlsPanel({
                   }
                   className={inputClass}
                 >
-                  <option value="WPA">WPA/WPA2</option>
+                  <option value="WPA">WPA/WPA2/WPA3</option>
                   <option value="WEP">WEP</option>
-                  <option value="nopass">None</option>
+                  <option value="nopass">Open (no password)</option>
                 </select>
               </Field>
+              <ToggleRow
+                label="Hidden network"
+                description="Enable if the SSID is not broadcast."
+                checked={data.wifi.hidden}
+                onChange={(v) => onUpdateData("wifi", { ...data.wifi, hidden: v })}
+              />
             </>
           )}
 
@@ -153,23 +152,190 @@ export default function ControlsPanel({
                   className={inputClass}
                 />
               </Field>
-              <Field label="Phone">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Work title">
+                  <input
+                    value={data.contact.title}
+                    onChange={(e) => onUpdateData("contact", { ...data.contact, title: e.target.value })}
+                    placeholder="Head of Design"
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Company">
+                  <input
+                    value={data.contact.company}
+                    onChange={(e) => onUpdateData("contact", { ...data.contact, company: e.target.value })}
+                    placeholder="Acme Inc."
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Phone">
+                  <input
+                    type="tel"
+                    value={data.contact.phone}
+                    onChange={(e) => onUpdateData("contact", { ...data.contact, phone: e.target.value })}
+                    placeholder="+1 234 567 8900"
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Email">
+                  <input
+                    type="email"
+                    value={data.contact.email}
+                    onChange={(e) => onUpdateData("contact", { ...data.contact, email: e.target.value })}
+                    placeholder="john@example.com"
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+              <Field label="Address">
                 <input
-                  type="tel"
-                  value={data.contact.phone}
-                  onChange={(e) => onUpdateData("contact", { ...data.contact, phone: e.target.value })}
-                  placeholder="+1 234 567 8900"
+                  value={data.contact.address}
+                  onChange={(e) => onUpdateData("contact", { ...data.contact, address: e.target.value })}
+                  placeholder="221B Baker Street, London"
                   className={inputClass}
                 />
               </Field>
-              <Field label="Email">
+              <AvatarField
+                value={data.contact.avatarDataUrl}
+                onChange={(v) => onUpdateData("contact", { ...data.contact, avatarDataUrl: v })}
+                label="Avatar (shown in the live preview)"
+              />
+            </>
+          )}
+
+          {data.type === "social" && (
+            <>
+              <Field label="Handle or name">
                 <input
-                  type="email"
-                  value={data.contact.email}
-                  onChange={(e) => onUpdateData("contact", { ...data.contact, email: e.target.value })}
-                  placeholder="john@example.com"
+                  value={data.social.handle}
+                  onChange={(e) => onUpdateData("social", { ...data.social, handle: e.target.value })}
+                  placeholder="@yourhandle"
                   className={inputClass}
                 />
+              </Field>
+              <Field label="Tagline">
+                <input
+                  value={data.social.tagline}
+                  onChange={(e) => onUpdateData("social", { ...data.social, tagline: e.target.value })}
+                  placeholder="Designer · Berlin"
+                  className={inputClass}
+                />
+              </Field>
+              <AvatarField
+                value={data.social.avatarDataUrl}
+                onChange={(v) => onUpdateData("social", { ...data.social, avatarDataUrl: v })}
+                label="Avatar"
+              />
+              <Field label="Social links">
+                <div className="space-y-2">
+                  {data.social.links.map((link, i) => (
+                    <div key={i} className="flex gap-2">
+                      <select
+                        value={link.network}
+                        onChange={(e) =>
+                          setSocialLinks(data.social.links.map((l, j) => (j === i ? { ...l, network: e.target.value } : l)))
+                        }
+                        className={`${inputClass} w-32 shrink-0 capitalize`}
+                      >
+                        {networks.map((n) => (
+                          <option key={n} value={n} className="capitalize">
+                            {n}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        value={link.url}
+                        onChange={(e) =>
+                          setSocialLinks(data.social.links.map((l, j) => (j === i ? { ...l, url: e.target.value } : l)))
+                        }
+                        placeholder="https://instagram.com/you"
+                        className={inputClass}
+                      />
+                      <button
+                        onClick={() => setSocialLinks(data.social.links.filter((_, j) => j !== i))}
+                        aria-label="Remove link"
+                        className="shrink-0 w-11 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setSocialLinks([...data.social.links, { network: "instagram", url: "" }])}
+                    className="flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors w-full justify-center"
+                  >
+                    <Plus className="w-4 h-4" /> Add link
+                  </button>
+                  <p className="text-xs text-muted-foreground">
+                    The QR opens your first link. Publish a full link-in-bio page from the Digital Card studio for multi-link hosting.
+                  </p>
+                </div>
+              </Field>
+            </>
+          )}
+
+          {data.type === "menu" && (
+            <>
+              <Field label="Restaurant name">
+                <input
+                  value={data.menu.restaurant}
+                  onChange={(e) => onUpdateData("menu", { ...data.menu, restaurant: e.target.value })}
+                  placeholder="Trattoria Nova"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Menu link">
+                <input
+                  type="url"
+                  value={data.menu.url}
+                  onChange={(e) => onUpdateData("menu", { ...data.menu, url: e.target.value })}
+                  placeholder="https://example.com/menu"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Note">
+                <input
+                  value={data.menu.note}
+                  onChange={(e) => onUpdateData("menu", { ...data.menu, note: e.target.value })}
+                  placeholder="Kitchen open until 23:00"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Highlighted dishes">
+                <div className="space-y-2">
+                  {data.menu.items.map((item, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input
+                        value={item.name}
+                        onChange={(e) => setMenuItems(data.menu.items.map((m, j) => (j === i ? { ...m, name: e.target.value } : m)))}
+                        placeholder="Tagliatelle al ragù"
+                        className={inputClass}
+                      />
+                      <input
+                        value={item.price}
+                        onChange={(e) => setMenuItems(data.menu.items.map((m, j) => (j === i ? { ...m, price: e.target.value } : m)))}
+                        placeholder="€14"
+                        className={`${inputClass} w-24 shrink-0`}
+                      />
+                      <button
+                        onClick={() => setMenuItems(data.menu.items.filter((_, j) => j !== i))}
+                        aria-label="Remove dish"
+                        className="shrink-0 w-11 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setMenuItems([...data.menu.items, { name: "", price: "" }])}
+                    className="flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors w-full justify-center"
+                  >
+                    <Plus className="w-4 h-4" /> Add dish
+                  </button>
+                </div>
               </Field>
             </>
           )}
@@ -191,11 +357,7 @@ export default function ControlsPanel({
                 >
                   <span className="flex -space-x-1.5">
                     {t.swatch.map((c) => (
-                      <span
-                        key={c}
-                        className="w-4 h-4 rounded-full border border-border"
-                        style={{ backgroundColor: c }}
-                      />
+                      <span key={c} className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c }} />
                     ))}
                   </span>
                   {t.label}
@@ -217,37 +379,38 @@ export default function ControlsPanel({
             onChange={(v) => onUpdateOptions("gradientTo", v ? "#ec4899" : null)}
           />
           {options.gradientTo !== null && (
-            <ColorField
-              label="Gradient end"
-              value={options.gradientTo}
-              onChange={(v) => onUpdateOptions("gradientTo", v)}
-            />
+            <ColorField label="Gradient end" value={options.gradientTo} onChange={(v) => onUpdateOptions("gradientTo", v)} />
           )}
 
-          <SegmentField
-            label="Dot style"
-            value={options.dotStyle}
-            items={dotStyles}
-            onChange={(v) => onUpdateOptions("dotStyle", v)}
-          />
+          <SegmentField label="Dot style" value={options.dotStyle} items={dotStyles} onChange={(v) => onUpdateOptions("dotStyle", v)} />
           <SegmentField
             label="Corner style"
             value={options.cornerStyle}
             items={cornerStyles}
             onChange={(v) => onUpdateOptions("cornerStyle", v)}
           />
-          <SegmentField
-            label="Frame"
-            value={options.frame}
-            items={frames}
-            onChange={(v) => onUpdateOptions("frame", v)}
-          />
+          <SegmentField label="Frame shape" value={options.frame} items={frames} onChange={(v) => onUpdateOptions("frame", v)} />
           {options.frame === "label" && (
-            <Field label="Caption text">
+            <Field label="Frame caption">
+              <div className="flex flex-wrap gap-2 mb-2">
+                {frameLabels.map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => onUpdateOptions("frameLabel", l)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      options.frameLabel === l
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
               <input
                 value={options.frameLabel}
                 onChange={(e) => onUpdateOptions("frameLabel", e.target.value)}
-                placeholder="Scan me"
+                placeholder="Scan Me"
                 className={inputClass}
               />
             </Field>
@@ -315,6 +478,34 @@ export default function ControlsPanel({
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function AvatarField({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+  return (
+    <Field label={label}>
+      <div className="flex items-center gap-3">
+        {value && <img src={value} alt="Avatar preview" className="w-10 h-10 rounded-full object-cover border border-border" />}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (file) onChange(await fileToResizedDataUrl(file, 320));
+          }}
+          className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-foreground hover:file:opacity-90 file:cursor-pointer"
+        />
+        {value && (
+          <button
+            onClick={() => onChange("")}
+            aria-label="Remove avatar"
+            className="shrink-0 w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </Field>
   );
 }
 
