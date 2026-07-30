@@ -1,15 +1,37 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { CornerStyle, DotStyle, FrameStyle, QrRenderOptions } from "@/lib/qrRender";
+import type { QrRenderOptions } from "@/lib/qrRender";
 import { buildQrSvg, svgToDataUrl } from "@/lib/qrRender";
+import { scannability } from "@/lib/scannability";
 
-export type QRType = "text" | "url" | "wifi" | "contact";
+export type QRType = "url" | "contact" | "wifi" | "pdf" | "social" | "menu";
+
+export interface SocialLink {
+  network: string;
+  url: string;
+}
+
+export interface MenuItem {
+  name: string;
+  price: string;
+}
 
 export interface QRData {
   type: QRType;
   text: string;
   url: string;
-  wifi: { ssid: string; password: string; encryption: "WPA" | "WEP" | "nopass" };
-  contact: { name: string; phone: string; email: string };
+  wifi: { ssid: string; password: string; encryption: "WPA" | "WEP" | "nopass"; hidden: boolean };
+  contact: {
+    name: string;
+    title: string;
+    company: string;
+    phone: string;
+    email: string;
+    address: string;
+    avatarDataUrl: string;
+  };
+  pdf: { title: string; url: string };
+  social: { handle: string; tagline: string; avatarDataUrl: string; links: SocialLink[] };
+  menu: { restaurant: string; url: string; note: string; items: MenuItem[] };
 }
 
 export interface QROptions extends QrRenderOptions {
@@ -28,8 +50,11 @@ const initialData: QRData = {
   type: "url",
   text: "",
   url: "",
-  wifi: { ssid: "", password: "", encryption: "WPA" },
-  contact: { name: "", phone: "", email: "" },
+  wifi: { ssid: "", password: "", encryption: "WPA", hidden: false },
+  contact: { name: "", title: "", company: "", phone: "", email: "", address: "", avatarDataUrl: "" },
+  pdf: { title: "", url: "" },
+  social: { handle: "", tagline: "", avatarDataUrl: "", links: [] },
+  menu: { restaurant: "", url: "", note: "", items: [] },
 };
 
 const initialOptions: QROptions = {
@@ -40,7 +65,7 @@ const initialOptions: QROptions = {
   dotStyle: "rounded",
   cornerStyle: "rounded",
   frame: "none",
-  frameLabel: "Scan me",
+  frameLabel: "Scan Me",
   logoDataUrl: null,
   logoWhiteBg: true,
   size: 512,
@@ -74,18 +99,42 @@ export const templates: QRTemplate[] = [
   },
 ];
 
+function esc(v: string) {
+  return v.replace(/([,;\\])/g, "\\$1");
+}
+
 export function buildQRString(data: QRData): string {
   switch (data.type) {
-    case "text":
-      return data.text;
     case "url":
-      return data.url;
+      return data.url.trim();
+    case "pdf":
+      return data.pdf.url.trim();
+    case "menu":
+      return data.menu.url.trim();
+    case "social": {
+      const first = data.social.links.find((l) => l.url.trim());
+      return first ? first.url.trim() : "";
+    }
     case "wifi":
-      return data.wifi.ssid ? `WIFI:T:${data.wifi.encryption};S:${data.wifi.ssid};P:${data.wifi.password};;` : "";
+      return data.wifi.ssid
+        ? `WIFI:T:${data.wifi.encryption};S:${esc(data.wifi.ssid)};P:${esc(data.wifi.password)};${data.wifi.hidden ? "H:true;" : ""};`
+        : "";
     case "contact": {
       const c = data.contact;
       if (!c.name && !c.phone && !c.email) return "";
-      return `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.phone}\nEMAIL:${c.email}\nEND:VCARD`;
+      return [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:${c.name}`,
+        c.title ? `TITLE:${c.title}` : "",
+        c.company ? `ORG:${c.company}` : "",
+        c.phone ? `TEL;TYPE=CELL:${c.phone}` : "",
+        c.email ? `EMAIL:${c.email}` : "",
+        c.address ? `ADR;TYPE=WORK:;;${esc(c.address)};;;;` : "",
+        "END:VCARD",
+      ]
+        .filter(Boolean)
+        .join("\n");
     }
     default:
       return "";
@@ -133,6 +182,19 @@ export function useQRGenerator() {
   const previewUrl = svg ? svgToDataUrl(svg) : "";
   const exportSize = options.highRes ? Math.max(options.size, 2480) : options.size;
 
+  const shield = useMemo(
+    () =>
+      scannability({
+        fgColor: options.fgColor,
+        bgColor: options.bgColor,
+        eyeColor: options.eyeColor,
+        logoDataUrl: options.logoDataUrl,
+        logoWhiteBg: options.logoWhiteBg,
+        contentLength: value.length,
+      }),
+    [options.fgColor, options.bgColor, options.eyeColor, options.logoDataUrl, options.logoWhiteBg, value.length],
+  );
+
   return {
     data,
     options,
@@ -142,6 +204,7 @@ export function useQRGenerator() {
     exportSize,
     hasContent,
     error,
+    shield,
     updateData,
     updateOptions,
     applyTemplate,
