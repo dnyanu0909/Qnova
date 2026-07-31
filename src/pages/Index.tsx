@@ -4,11 +4,17 @@ import PreviewPanel from "@/components/PreviewPanel";
 import MicroCardStudio from "@/components/microcard/MicroCardStudio";
 import PresetBar from "@/components/PresetBar";
 import DestinationPreview from "@/components/DestinationPreview";
-import { QrCode, Sun, Moon, IdCard } from "lucide-react";
+import BatchMode from "@/components/BatchMode";
+import VaultDrawer from "@/components/VaultDrawer";
+import PrintStudio from "@/components/PrintStudio";
+import { buildQRString } from "@/hooks/useQRGenerator";
+import { readVault, saveEntry, type VaultEntry } from "@/lib/vault";
+import { QrCode, Sun, Moon, IdCard, Layers, Archive } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-type Mode = "qr" | "card";
+type Mode = "qr" | "card" | "batch";
 
 const Index = () => {
   const {
@@ -22,10 +28,36 @@ const Index = () => {
     shield,
     updateData,
     updateOptions,
-    applyTemplate
+    applyTemplate,
+    restore
   } = useQRGenerator();
   const { theme, setTheme } = useTheme();
   const [mode, setMode] = useState<Mode>("qr");
+  const [vault, setVault] = useState<VaultEntry[]>([]);
+
+  useEffect(() => {
+    setVault(readVault());
+  }, []);
+
+  const value = buildQRString(data);
+  const vaultLabel =
+    data.type === "contact"
+      ? data.contact.name
+      : data.type === "menu"
+        ? data.menu.restaurant
+        : data.type === "wifi"
+          ? data.wifi.ssid
+          : data.type === "pdf"
+            ? data.pdf.title
+            : data.type === "social"
+              ? data.social.handle
+              : data.url;
+
+  const saveToVault = () => {
+    if (!svg) return;
+    setVault(saveEntry({ name: vaultLabel?.trim() || `${data.type} code`, value, data, options }));
+    toast.success("Saved to My Vault");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,6 +72,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
+            <VaultDrawer entries={vault} onEntriesChange={setVault} onRestore={restore} />
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
@@ -61,7 +94,9 @@ const Index = () => {
           <p className="mt-2 text-muted-foreground text-base lg:text-lg max-w-lg mx-auto">
             {mode === "qr"
               ? "Pick a preset, build the destination live, and export a scan-proof QR code in seconds."
-              : "Build a sleek micro-landing page and share it with a single scannable QR code."}
+              : mode === "card"
+                ? "Build a sleek micro-landing page and share it with a single scannable QR code."
+                : "Upload a CSV and generate a whole batch of styled QR codes in one go."}
           </p>
 
           <div className="mt-6 inline-flex rounded-xl border border-border bg-card p-1">
@@ -83,10 +118,21 @@ const Index = () => {
               <IdCard className="w-4 h-4" />
               Digital Contact / Link-in-Bio
             </button>
+            <button
+              onClick={() => setMode("batch")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === "batch" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              Batch Mode
+            </button>
           </div>
         </div>
 
-        {mode === "card" ? (
+        {mode === "batch" ? (
+          <BatchMode options={options} />
+        ) : mode === "card" ? (
           <MicroCardStudio />
         ) : (
         <div className="space-y-6 lg:space-y-8">
@@ -113,8 +159,18 @@ const Index = () => {
                 highRes={options.highRes}
                 error={error}
                 shield={shield} />
+
+              <button
+                onClick={saveToVault}
+                disabled={!svg}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
+              >
+                <Archive className="w-4 h-4" /> Save to Vault
+              </button>
             </div>
           </div>
+
+          <PrintStudio previewUrl={previewUrl} svg={svg} label={vaultLabel} />
         </div>
         )}
       </main>
