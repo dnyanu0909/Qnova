@@ -162,6 +162,11 @@ export function useQRGenerator() {
     setOptions((prev) => ({ ...prev, ...tpl.patch }));
   }, []);
 
+  const restore = useCallback((nextData: QRData, nextOptions: QROptions) => {
+    setData(nextData);
+    setOptions(nextOptions);
+  }, []);
+
   const value = buildQRString(data);
   const hasContent = value.trim().length > 0;
 
@@ -208,5 +213,6 @@ export function useQRGenerator() {
     updateData,
     updateOptions,
     applyTemplate,
+    restore,
   };
 }
