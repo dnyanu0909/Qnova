@@ -89,7 +89,7 @@ const Index = () => {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 lg:py-12">
         <div className="text-center mb-8 lg:mb-12">
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
-            {mode === "qr" ? "Generate QR Codes" : "Digital Contact / Link-in-Bio"}
+            {mode === "qr" ? "Generate QR Codes" : mode === "card" ? "Digital Contact / Link-in-Bio" : "Batch QR Production"}
           </h1>
           <p className="mt-2 text-muted-foreground text-base lg:text-lg max-w-lg mx-auto">
             {mode === "qr"
