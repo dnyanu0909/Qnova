@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link as LinkIcon, Copy, Check, Download, Smartphone } from "lucide-react";
 import { useMicroPage } from "@/hooks/useMicroPage";
 import MicroCardForm from "./MicroCardForm";
+import PageGalleryDrawer from "./PageGalleryDrawer";
+import { savePage } from "@/lib/pageGallery";
 import MicroCardView from "./MicroCardView";
 import { qrToPngDataUrl, qrToSvgString, downloadDataUrl, downloadSvg } from "@/lib/qrExport";
 import { fileToResizedDataUrl } from "@/lib/imageResize";
@@ -14,6 +16,7 @@ export default function MicroCardStudio() {
     isPublishing,
     error,
     update,
+    restoreForm,
     updateSocial,
     addButton,
     updateButton,
@@ -24,6 +27,15 @@ export default function MicroCardStudio() {
   const [qrPng, setQrPng] = useState("");
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [galleryKey, setGalleryKey] = useState(0);
+
+  const publishAndSave = async () => {
+    const newSlug = await publish();
+    if (newSlug) {
+      savePage(newSlug, `${window.location.origin}/p/${newSlug}`, form);
+      setGalleryKey((k) => k + 1);
+    }
+  };
 
   useEffect(() => {
     if (!pageUrl) {
@@ -57,14 +69,19 @@ export default function MicroCardStudio() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-      <MicroCardForm
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <PageGalleryDrawer onEdit={restoreForm} refreshKey={galleryKey} />
+        </div>
+        <MicroCardForm
         form={form}
         onUpdate={update}
         onUpdateSocial={updateSocial}
         onAddButton={addButton}
         onUpdateButton={updateButton}
         onRemoveButton={removeButton}
-      />
+        />
+      </div>
 
       <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
         <div className="glass-card p-6 lg:p-8 flex flex-col items-center">
@@ -80,6 +97,9 @@ export default function MicroCardStudio() {
                   headline: form.headline,
                   bio: form.bio,
                   avatarUrl: form.avatarDataUrl,
+                  logoUrl: form.logoUrl,
+                  attachmentUrl: form.attachmentUrl,
+                  attachmentName: form.attachmentName,
                   phone: form.phone,
                   email: form.email,
                   accent: form.accent,
@@ -100,7 +120,7 @@ export default function MicroCardStudio() {
           )}
 
           <button
-            onClick={publish}
+            onClick={publishAndSave}
             disabled={isPublishing}
             className="w-full py-3.5 px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
           >

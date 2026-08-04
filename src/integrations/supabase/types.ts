@@ -17,6 +17,8 @@ export type Database = {
       micro_pages: {
         Row: {
           accent: string
+          attachment_name: string | null
+          attachment_url: string | null
           avatar_url: string | null
           bio: string | null
           buttons: Json
@@ -25,12 +27,15 @@ export type Database = {
           full_name: string
           headline: string | null
           id: string
+          logo_url: string | null
           phone: string | null
           slug: string
           socials: Json
         }
         Insert: {
           accent?: string
+          attachment_name?: string | null
+          attachment_url?: string | null
           avatar_url?: string | null
           bio?: string | null
           buttons?: Json
@@ -39,12 +44,15 @@ export type Database = {
           full_name: string
           headline?: string | null
           id?: string
+          logo_url?: string | null
           phone?: string | null
           slug: string
           socials?: Json
         }
         Update: {
           accent?: string
+          attachment_name?: string | null
+          attachment_url?: string | null
           avatar_url?: string | null
           bio?: string | null
           buttons?: Json
@@ -53,6 +61,7 @@ export type Database = {
           full_name?: string
           headline?: string | null
           id?: string
+          logo_url?: string | null
           phone?: string | null
           slug?: string
           socials?: Json

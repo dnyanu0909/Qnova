@@ -91,6 +91,10 @@ export default {
             height: "0",
           },
         },
+        scanline: {
+          "0%, 100%": { top: "8%" },
+          "50%": { top: "88%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

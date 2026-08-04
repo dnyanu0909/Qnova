@@ -1,4 +1,4 @@
-import { Mail, Phone, Github, Linkedin, Twitter, Instagram, ExternalLink, UserRound, Download } from "lucide-react";
+import { Mail, Phone, Github, Linkedin, Twitter, Instagram, ExternalLink, UserRound, Download, FileText } from "lucide-react";
 import type { MicroPageButton, MicroPageSocials } from "@/hooks/useMicroPage";
 
 export interface MicroCardData {
@@ -6,6 +6,9 @@ export interface MicroCardData {
   headline: string;
   bio: string;
   avatarUrl: string;
+  logoUrl?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
   phone: string;
   email: string;
   accent: string;
@@ -71,6 +74,14 @@ export default function MicroCardView({ data, compact = false }: { data: MicroCa
           )}
         </div>
 
+        {data.logoUrl && (
+          <img
+            src={data.logoUrl}
+            alt="Company logo"
+            className="mt-4 h-8 w-auto max-w-[9rem] object-contain"
+          />
+        )}
+
         <h1 className={`${compact ? "text-xl" : "text-2xl"} font-bold text-foreground mt-4 tracking-tight`}>
           {data.fullName || "Your Name"}
         </h1>
@@ -120,6 +131,18 @@ export default function MicroCardView({ data, compact = false }: { data: MicroCa
               </a>
             ))}
           </div>
+        )}
+
+        {data.attachmentUrl && (
+          <a
+            href={data.attachmentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm text-foreground hover:bg-secondary transition-colors"
+          >
+            <FileText className="w-4 h-4 shrink-0" style={{ color: accent }} />
+            <span className="truncate">{data.attachmentName || "View attached file"}</span>
+          </a>
         )}
 
         {activeSocials.length > 0 && (
