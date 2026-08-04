@@ -20,6 +20,9 @@ export interface MicroPageForm {
   headline: string;
   bio: string;
   avatarDataUrl: string;
+  logoUrl: string;
+  attachmentUrl: string;
+  attachmentName: string;
   phone: string;
   email: string;
   accent: string;
@@ -32,6 +35,9 @@ export const emptyMicroPage: MicroPageForm = {
   headline: "",
   bio: "",
   avatarDataUrl: "",
+  logoUrl: "",
+  attachmentUrl: "",
+  attachmentName: "",
   phone: "",
   email: "",
   accent: "#6366f1",
@@ -59,6 +65,11 @@ export function useMicroPage() {
 
   const update = useCallback(<K extends keyof MicroPageForm>(key: K, value: MicroPageForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setSlug("");
+  }, []);
+
+  const restoreForm = useCallback((next: MicroPageForm) => {
+    setForm({ ...emptyMicroPage, ...next });
     setSlug("");
   }, []);
 
@@ -104,6 +115,9 @@ export function useMicroPage() {
         headline: form.headline.trim() || null,
         bio: form.bio.trim() || null,
         avatar_url: form.avatarDataUrl || null,
+        logo_url: form.logoUrl || null,
+        attachment_url: form.attachmentUrl || null,
+        attachment_name: form.attachmentName || null,
         phone: form.phone.trim() || null,
         email: form.email.trim() || null,
         accent: form.accent,
@@ -128,6 +142,7 @@ export function useMicroPage() {
     isPublishing,
     error,
     update,
+    restoreForm,
     updateSocial,
     addButton,
     updateButton,
