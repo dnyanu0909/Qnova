@@ -125,7 +125,7 @@ export default function ScannerModal({ open, onOpenChange }: Props) {
                     <div key={i} className="border border-primary/40" />
                   ))}
                 </div>
-                <div className="absolute left-6 right-6 h-0.5 bg-primary animate-[scanline_2.4s_ease-in-out_infinite]" />
+                <div className="absolute left-6 right-6 top-[8%] h-0.5 bg-primary animate-[scanline_2.4s_ease-in-out_infinite]" />
               </div>
               {error && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/90 px-6 text-center text-sm text-muted-foreground">

@@ -92,8 +92,8 @@ export default {
           },
         },
         scanline: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(calc(100% - 0.125rem))" },
+          "0%, 100%": { top: "8%" },
+          "50%": { top: "88%" },
         },
       },
       animation: {
