@@ -91,6 +91,10 @@ export default {
             height: "0",
           },
         },
+        scanline: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(calc(100% - 0.125rem))" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
