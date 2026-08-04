@@ -1,4 +1,7 @@
-import { Plus, Trash2, Github, Linkedin, Twitter, Instagram } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, Github, Linkedin, Twitter, Instagram, FileUp, Loader2, X } from "lucide-react";
+import { toast } from "sonner";
+import { uploadPageAsset } from "@/lib/uploadAsset";
 import type { MicroPageForm, MicroPageSocials } from "@/hooks/useMicroPage";
 import { fileToResizedDataUrl } from "@/lib/imageResize";
 
@@ -29,6 +32,26 @@ export default function MicroCardForm({
   onUpdateButton,
   onRemoveButton,
 }: Props) {
+  const [busy, setBusy] = useState<"logo" | "file" | null>(null);
+
+  const handleAsset = async (kind: "logo" | "file", file: File | undefined) => {
+    if (!file) return;
+    setBusy(kind);
+    try {
+      const { url, name } = await uploadPageAsset(file);
+      if (kind === "logo") onUpdate("logoUrl", url);
+      else {
+        onUpdate("attachmentUrl", url);
+        onUpdate("attachmentName", name);
+      }
+      toast.success("Upload complete");
+    } catch {
+      toast.error("Could not upload that file. Please try again.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleAvatar = async (file: File | undefined) => {
     if (!file) return;
     const dataUrl = await fileToResizedDataUrl(file, 320);
@@ -104,6 +127,62 @@ export default function MicroCardForm({
             placeholder="ada@example.com"
             className={inputClass}
           />
+        </Field>
+      </div>
+
+      <div className="border-t border-border pt-6 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">Media & Assets</h3>
+
+        <Field label="Company logo">
+          <div className="flex items-center gap-3">
+            {form.logoUrl && (
+              <img src={form.logoUrl} alt="Company logo" className="h-11 w-11 rounded-lg border border-border object-contain bg-card shrink-0" />
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleAsset("logo", e.target.files?.[0])}
+              className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-foreground hover:file:opacity-90 file:cursor-pointer"
+            />
+            {busy === "logo" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground shrink-0" />}
+            {form.logoUrl && (
+              <button
+                onClick={() => onUpdate("logoUrl", "")}
+                aria-label="Remove logo"
+                className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </Field>
+
+        <Field label="Attach a file (menu PDF, brochure, deck)">
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              accept="application/pdf,image/*"
+              onChange={(e) => handleAsset("file", e.target.files?.[0])}
+              className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-foreground hover:file:opacity-90 file:cursor-pointer"
+            />
+            {busy === "file" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground shrink-0" />}
+          </div>
+          {form.attachmentUrl && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <FileUp className="w-3.5 h-3.5" />
+              <span className="truncate">{form.attachmentName || "Attached file"}</span>
+              <button
+                onClick={() => {
+                  onUpdate("attachmentUrl", "");
+                  onUpdate("attachmentName", "");
+                }}
+                className="hover:text-destructive transition-colors"
+                aria-label="Remove file"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </Field>
       </div>
 
