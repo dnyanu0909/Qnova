@@ -2,6 +2,7 @@ import { QRData, QROptions, templates, SocialLink, MenuItem } from "@/hooks/useQ
 import type { CornerStyle, DotStyle, FrameStyle } from "@/lib/qrRender";
 import { fileToResizedDataUrl } from "@/lib/imageResize";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BrandKitPanel from "@/components/BrandKitPanel";
 import { Switch } from "@/components/ui/switch";
 import { QrCode, Palette, Settings2, Trash2, Plus } from "lucide-react";
 
@@ -343,6 +344,15 @@ export default function ControlsPanel({
 
         {/* DESIGN */}
         <TabsContent value="design" className="space-y-6 pt-6">
+          <BrandKitPanel
+            options={options}
+            onApply={(patch) =>
+              (Object.entries(patch) as [keyof QROptions, QROptions[keyof QROptions]][]).forEach(([k, v]) =>
+                onUpdateOptions(k, v as never),
+              )
+            }
+          />
+
           <Field label="Preset templates">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {templates.map((t) => (

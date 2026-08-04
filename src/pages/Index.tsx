@@ -6,10 +6,11 @@ import PresetBar from "@/components/PresetBar";
 import DestinationPreview from "@/components/DestinationPreview";
 import BatchMode from "@/components/BatchMode";
 import VaultDrawer from "@/components/VaultDrawer";
+import ScannerModal from "@/components/ScannerModal";
 import PrintStudio from "@/components/PrintStudio";
 import { buildQRString } from "@/hooks/useQRGenerator";
 import { readVault, saveEntry, type VaultEntry } from "@/lib/vault";
-import { QrCode, Sun, Moon, IdCard, Layers, Archive } from "lucide-react";
+import { QrCode, Sun, Moon, IdCard, Layers, Archive, ScanLine } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +35,7 @@ const Index = () => {
   const { theme, setTheme } = useTheme();
   const [mode, setMode] = useState<Mode>("qr");
   const [vault, setVault] = useState<VaultEntry[]>([]);
+  const [scanOpen, setScanOpen] = useState(false);
 
   useEffect(() => {
     setVault(readVault());
@@ -72,6 +74,12 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
+            <button
+              onClick={() => setScanOpen(true)}
+              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+            >
+              <ScanLine className="w-3.5 h-3.5" /> Scan QR
+            </button>
             <VaultDrawer entries={vault} onEntriesChange={setVault} onRestore={restore} />
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -174,6 +182,8 @@ const Index = () => {
         </div>
         )}
       </main>
+
+      <ScannerModal open={scanOpen} onOpenChange={setScanOpen} />
     </div>);
 
 };
