@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      dynamic_links: {
+        Row: {
+          created_at: string
+          destination_url: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          qr_options: Json
+          short_code: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination_url: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          qr_options?: Json
+          short_code: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination_url?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          qr_options?: Json
+          short_code?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       micro_pages: {
         Row: {
           accent: string
@@ -67,6 +106,74 @@ export type Database = {
           socials?: Json
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scan_events: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          link_id: string
+          os: string | null
+          referrer: string | null
+          visitor_key: string | null
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          link_id: string
+          os?: string | null
+          referrer?: string | null
+          visitor_key?: string | null
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          link_id?: string
+          os?: string | null
+          referrer?: string | null
+          visitor_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "dynamic_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
