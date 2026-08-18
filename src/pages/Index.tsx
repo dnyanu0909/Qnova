@@ -11,6 +11,8 @@ import PrintStudio from "@/components/PrintStudio";
 import { buildQRString } from "@/hooks/useQRGenerator";
 import { readVault, saveEntry, type VaultEntry } from "@/lib/vault";
 import { QrCode, Sun, Moon, IdCard, Layers, Archive, ScanLine } from "lucide-react";
+import { Link } from "react-router-dom";
+import { BarChart3 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -74,6 +76,12 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+            >
+              <BarChart3 className="w-3.5 h-3.5" /> Dashboard
+            </Link>
             <button
               onClick={() => setScanOpen(true)}
               className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
