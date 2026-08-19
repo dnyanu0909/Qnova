@@ -1,4 +1,4 @@
-import { Infinity as InfinityIcon, Link2, LineChart, FileVector } from "lucide-react";
+import { Infinity as InfinityIcon, Link2, LineChart, FileCode2 } from "lucide-react";
 import { Check, X } from "lucide-react";
 
 const features = [
@@ -18,7 +18,7 @@ const features = [
     body: "See total and unique scans, devices, browsers and estimated geography as they happen.",
   },
   {
-    icon: FileVector,
+    icon: FileCode2,
     title: "Vector Print-Ready (SVG/PDF)",
     body: "Export crisp SVG, 300 DPI PNG and print PDFs with bleed lines and crop marks.",
   },
