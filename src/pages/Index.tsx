@@ -8,6 +8,9 @@ import BatchMode from "@/components/BatchMode";
 import VaultDrawer from "@/components/VaultDrawer";
 import ScannerModal from "@/components/ScannerModal";
 import PrintStudio from "@/components/PrintStudio";
+import Hero from "@/components/landing/Hero";
+import FeatureShowcase from "@/components/landing/FeatureShowcase";
+import TemplateGallery, { type GalleryTemplate } from "@/components/landing/TemplateGallery";
 import { buildQRString } from "@/hooks/useQRGenerator";
 import { readVault, saveEntry, type VaultEntry } from "@/lib/vault";
 import { QrCode, Sun, Moon, IdCard, Layers, Archive, ScanLine } from "lucide-react";
@@ -38,6 +41,17 @@ const Index = () => {
   const [mode, setMode] = useState<Mode>("qr");
   const [vault, setVault] = useState<VaultEntry[]>([]);
   const [scanOpen, setScanOpen] = useState(false);
+
+  const scrollToStudio = () => {
+    document.getElementById("studio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const applyGalleryTemplate = (tpl: GalleryTemplate) => {
+    restore(tpl.data, tpl.options);
+    setMode("qr");
+    toast.success(`${tpl.label} template loaded`);
+    setTimeout(scrollToStudio, 60);
+  };
 
   useEffect(() => {
     setVault(readVault());
@@ -103,7 +117,13 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 lg:py-12">
-        <div className="text-center mb-8 lg:mb-12">
+        <div className="space-y-16 lg:space-y-20 mb-16 lg:mb-20">
+          <Hero onStart={scrollToStudio} />
+          <FeatureShowcase />
+          <TemplateGallery onApply={applyGalleryTemplate} />
+        </div>
+
+        <div id="studio" className="text-center mb-8 lg:mb-12 scroll-mt-24">
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
             {mode === "qr" ? "Generate QR Codes" : mode === "card" ? "Digital Contact / Link-in-Bio" : "Batch QR Production"}
           </h1>
