@@ -8,6 +8,7 @@ import BatchMode from "@/components/BatchMode";
 import VaultDrawer from "@/components/VaultDrawer";
 import ScannerModal from "@/components/ScannerModal";
 import PrintStudio from "@/components/PrintStudio";
+import SaveDynamicLink from "@/components/SaveDynamicLink";
 import Hero from "@/components/landing/Hero";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
 import TemplateGallery, { type GalleryTemplate } from "@/components/landing/TemplateGallery";
@@ -58,6 +59,16 @@ const Index = () => {
   }, []);
 
   const value = buildQRString(data);
+  const dynamicDestination =
+    data.type === "url"
+      ? data.url
+      : data.type === "pdf"
+        ? data.pdf.url
+        : data.type === "menu"
+          ? data.menu.url
+          : data.type === "social"
+            ? (data.social.links.find((l) => l.url.trim())?.url ?? "")
+            : "";
   const vaultLabel =
     data.type === "contact"
       ? data.contact.name
@@ -203,6 +214,14 @@ const Index = () => {
               >
                 <Archive className="w-4 h-4" /> Save to Vault
               </button>
+
+              {dynamicDestination.trim() && (
+                <SaveDynamicLink
+                  destinationUrl={dynamicDestination}
+                  title={vaultLabel?.trim() || "Untitled campaign"}
+                  options={options}
+                />
+              )}
             </div>
           </div>
 
