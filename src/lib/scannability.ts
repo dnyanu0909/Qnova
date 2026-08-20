@@ -3,6 +3,14 @@ export interface ScannabilityResult {
   ratio: number;
   level: "poor" | "fair" | "good" | "excellent";
   message: string;
+  /** ISO 15415 symbol contrast: (R_light − R_dark) as a percentage of full reflectance. */
+  isoContrast: number;
+  /** ISO 15415 symbol-contrast grade, A (best) to F (fail). */
+  isoGrade: "A" | "B" | "C" | "D" | "F";
+  /** True when symbol contrast reaches the ISO grade-C (40%) pass threshold. */
+  isoPass: boolean;
+  /** Human-readable ISO validation problems, empty when the design passes. */
+  isoIssues: string[];
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -27,6 +35,21 @@ export function contrastRatio(a: string, b: string) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/** ISO/IEC 15415 symbol contrast (SC) = (R_max − R_min) × 100, using relative luminance as reflectance. */
+export function symbolContrast(dark: string, light: string) {
+  const a = luminance(dark);
+  const b = luminance(light);
+  return Math.round(Math.abs(b - a) * 100);
+}
+
+export function isoGradeFor(sc: number): ScannabilityResult["isoGrade"] {
+  if (sc >= 70) return "A";
+  if (sc >= 55) return "B";
+  if (sc >= 40) return "C";
+  if (sc >= 20) return "D";
+  return "F";
+}
+
 export function scannability(opts: {
   fgColor: string;
   bgColor: string;
@@ -39,6 +62,29 @@ export function scannability(opts: {
     contrastRatio(opts.fgColor, opts.bgColor),
     contrastRatio(opts.eyeColor, opts.bgColor),
   );
+
+  const isoContrast = Math.min(
+    symbolContrast(opts.fgColor, opts.bgColor),
+    symbolContrast(opts.eyeColor, opts.bgColor),
+  );
+  const isoGrade = isoGradeFor(isoContrast);
+  const isoPass = isoContrast >= 40;
+
+  const isoIssues: string[] = [];
+  if (!isoPass) {
+    isoIssues.push(
+      `Symbol contrast is ${isoContrast}% (grade ${isoGrade}). ISO 15415 requires at least 40% — pick a darker module colour or a lighter background.`,
+    );
+  }
+  if (symbolContrast(opts.eyeColor, opts.bgColor) < 40) {
+    isoIssues.push("The corner eyes need the same 40% contrast as the modules — scanners locate the symbol with them first.");
+  }
+  if (luminance(opts.fgColor) > luminance(opts.bgColor)) {
+    isoIssues.push("Inverted code: ISO 18004 expects dark modules on a light background. Some scanners refuse to read light-on-dark.");
+  }
+  if (opts.logoDataUrl && !opts.logoWhiteBg) {
+    isoIssues.push("A logo without a solid backing overlaps data modules — enable the white backing to stay inside the error-correction budget.");
+  }
 
   // Camera sensors need far more contrast than text: 7:1 is the comfort floor.
   let score = Math.round(Math.min(100, (ratio / 12) * 100));
@@ -61,5 +107,5 @@ export function scannability(opts: {
     message = "Good — reliable on most phones.";
   }
 
-  return { score, ratio, level, message };
+  return { score, ratio, level, message, isoContrast, isoGrade, isoPass, isoIssues };
 }
