@@ -135,6 +135,23 @@ export default function Dashboard() {
 
   const uniqueTotal = useMemo(() => new Set(scans.map((s) => s.visitor_key ?? s.id)).size, [scans]);
 
+  const last30 = useMemo(() => {
+    const days: string[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const totals = new Map<string, number>();
+    scans.forEach((s) => {
+      const key = dayKey(s.created_at);
+      totals.set(key, (totals.get(key) ?? 0) + 1);
+    });
+    return days.map((d) => ({ day: d.slice(5), scans: totals.get(d) ?? 0 }));
+  }, [scans]);
+
+  const last30Total = useMemo(() => last30.reduce((sum, d) => sum + d.scans, 0), [last30]);
+
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !destination.trim()) return;
