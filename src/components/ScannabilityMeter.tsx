@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, TriangleAlert, BadgeCheck } from "lucide-react";
 import type { ScannabilityResult } from "@/lib/scannability";
 
 export default function ScannabilityMeter({ result }: { result: ScannabilityResult }) {
@@ -31,6 +31,51 @@ export default function ScannabilityMeter({ result }: { result: ScannabilityResu
       <p className="text-xs leading-relaxed text-muted-foreground">
         {result.message} <span className="font-mono">({result.ratio.toFixed(1)}:1 contrast)</span>
       </p>
+
+      <div className="space-y-2 border-t border-border pt-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-medium text-foreground">ISO 15415 symbol contrast</span>
+          <span
+            className={`flex items-center gap-1.5 text-xs font-semibold tabular-nums ${
+              result.isoPass ? "text-success" : "text-destructive"
+            }`}
+          >
+            {result.isoPass ? <BadgeCheck className="h-3.5 w-3.5" /> : <TriangleAlert className="h-3.5 w-3.5" />}
+            {result.isoContrast}% · grade {result.isoGrade}
+          </span>
+        </div>
+
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-border">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${result.isoPass ? "bg-success" : "bg-destructive"}`}
+            style={{ width: `${Math.min(100, result.isoContrast)}%` }}
+          />
+          {/* 40% ISO grade-C pass threshold */}
+          <span className="absolute inset-y-0 left-[40%] w-px bg-foreground/50" aria-hidden />
+        </div>
+
+        {result.isoIssues.length > 0 ? (
+          <ul
+            role="alert"
+            className={`space-y-1.5 rounded-lg border px-3 py-2 text-xs leading-relaxed ${
+              result.isoPass
+                ? "border-warning/30 bg-warning/10 text-warning"
+                : "border-destructive/30 bg-destructive/10 text-destructive"
+            }`}
+          >
+            {result.isoIssues.map((issue) => (
+              <li key={issue} className="flex gap-1.5">
+                <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0" />
+                <span>{issue}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Passes the ISO grade-C threshold (40% minimum) with room to spare.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
