@@ -105,6 +105,8 @@ export async function resolveLink(code: string) {
     .from("dynamic_links")
     .select("id, destination_url, title")
     .eq("short_code", code)
+    .eq("is_active", true)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .maybeSingle();
   if (error) throw error;
   return data;
