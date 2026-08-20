@@ -135,6 +135,23 @@ export default function Dashboard() {
 
   const uniqueTotal = useMemo(() => new Set(scans.map((s) => s.visitor_key ?? s.id)).size, [scans]);
 
+  const last30 = useMemo(() => {
+    const days: string[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const totals = new Map<string, number>();
+    scans.forEach((s) => {
+      const key = dayKey(s.created_at);
+      totals.set(key, (totals.get(key) ?? 0) + 1);
+    });
+    return days.map((d) => ({ day: d.slice(5), scans: totals.get(d) ?? 0 }));
+  }, [scans]);
+
+  const last30Total = useMemo(() => last30.reduce((sum, d) => sum + d.scans, 0), [last30]);
+
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !destination.trim()) return;
@@ -260,6 +277,31 @@ export default function Dashboard() {
         </form>
 
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+          <div className="glass-card p-5 sm:p-6 lg:col-span-2">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-sm font-semibold text-foreground">Scans over the last 30 days</h2>
+              <p className="text-xs text-muted-foreground">{last30Total} scans total</p>
+            </div>
+            <div className="h-64 mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={last30}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={10} interval={2} />
+                  <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 12,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="scans" name="Scans" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
           <div className="glass-card p-5 sm:p-6">
             <h2 className="text-sm font-semibold text-foreground">Total vs unique scans (14 days)</h2>
             <div className="h-64 mt-4">
@@ -348,9 +390,10 @@ export default function Dashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="py-2 pr-4 font-medium">Campaign</th>
-                    <th className="py-2 pr-4 font-medium">Short link</th>
-                    <th className="py-2 pr-4 font-medium">Scans</th>
+                    <th className="py-2 pr-4 font-medium">Title</th>
+                    <th className="py-2 pr-4 font-medium">Short URL</th>
+                    <th className="py-2 pr-4 font-medium">Target URL</th>
+                    <th className="py-2 pr-4 font-medium">Total scans</th>
                     <th className="py-2 pr-4 font-medium">Expires</th>
                     <th className="py-2 pr-4 font-medium">Active</th>
                     <th className="py-2 font-medium text-right">Actions</th>
@@ -363,7 +406,9 @@ export default function Dashboard() {
                       <tr key={link.id} className="border-t border-border">
                         <td className="py-3 pr-4">
                           <p className="font-medium text-foreground">{link.title}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[16rem]">{link.destination_url}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(link.created_at).toLocaleDateString()}
+                          </p>
                         </td>
                         <td className="py-3 pr-4">
                           <button
@@ -375,6 +420,16 @@ export default function Dashboard() {
                           >
                             /r/{link.short_code} <Copy className="w-3 h-3" />
                           </button>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <a
+                            href={link.destination_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline block truncate max-w-[14rem]"
+                          >
+                            {link.destination_url}
+                          </a>
                         </td>
                         <td className="py-3 pr-4 text-foreground">
                           {rows.length}
@@ -392,10 +447,9 @@ export default function Dashboard() {
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => setEditing(link)}
-                              className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
-                              aria-label="Edit campaign"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-secondary"
                             >
-                              <Pencil className="w-3.5 h-3.5" />
+                              <Pencil className="w-3.5 h-3.5" /> Edit target
                             </button>
                             <button
                               onClick={() => setPrinting(link)}
