@@ -31,6 +31,8 @@ export default function PreviewPanel({
   svg,
   content,
   label,
+  fgColor,
+  bgColor,
   exportSize,
   highRes,
   error,
@@ -65,7 +67,7 @@ export default function PreviewPanel({
 
   const downloadEps = () => {
     try {
-      const eps = buildEps(content, shield ? "#000000" : "#000000", "#ffffff");
+      const eps = buildEps(content, fgColor, bgColor);
       downloadBlob(new Blob([eps], { type: "application/postscript" }), "qnova-qr.eps");
       toast.success("Vector EPS exported — square modules, 4-module quiet zone.");
     } catch {
@@ -75,7 +77,7 @@ export default function PreviewPanel({
 
   const downloadPdf = () => {
     try {
-      buildPrintPdf(content, "#000000", "#ffffff", label).save("qnova-qr-print.pdf");
+      buildPrintPdf(content, fgColor, bgColor, label).save("qnova-qr-print.pdf");
       toast.success("Print PDF exported — vector modules with ISO quiet zone.");
     } catch {
       toast.error("Could not build the print PDF.");
