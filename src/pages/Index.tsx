@@ -202,6 +202,10 @@ const Index = () => {
               <PreviewPanel
                 previewUrl={previewUrl}
                 svg={svg}
+                content={value}
+                label={vaultLabel?.trim() || "QNova QR code"}
+                fgColor={options.fgColor}
+                bgColor={options.bgColor}
                 exportSize={exportSize}
                 highRes={options.highRes}
                 error={error}
