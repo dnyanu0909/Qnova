@@ -12,6 +12,8 @@ interface PreviewPanelProps {
   /** Raw encoded content — used for vector exports and print-size math. */
   content: string;
   label: string;
+  fgColor: string;
+  bgColor: string;
   exportSize: number;
   highRes: boolean;
   error: string;
