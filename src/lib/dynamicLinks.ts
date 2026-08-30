@@ -1,6 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { QrRenderOptions } from "@/lib/qrRender";
 
+export interface DaypartRule {
+  start: string;
+  end: string;
+  url: string;
+}
+
+export interface RoutingRules {
+  devices?: { ios?: string; android?: string; desktop?: string };
+  dayparts?: DaypartRule[];
+}
+
+export interface LinkGates {
+  lead?: boolean;
+  pin?: boolean;
+}
+
 export interface DynamicLink {
   id: string;
   user_id: string;
@@ -10,9 +26,25 @@ export interface DynamicLink {
   is_active: boolean;
   expires_at: string | null;
   qr_options: Partial<QrRenderOptions>;
+  routing_rules: RoutingRules;
+  gates: LinkGates;
+  max_scans: number | null;
+  fallback_url: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export interface LinkLead {
+  id: string;
+  link_id: string;
+  name: string | null;
+  email: string;
+  device_type: string | null;
+  country: string | null;
+  city: string | null;
+  created_at: string;
+}
+
 
 export interface ScanEvent {
   id: string;
