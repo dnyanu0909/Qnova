@@ -16,42 +16,98 @@ export type Database = {
     Tables: {
       dynamic_links: {
         Row: {
+          access_pin: string | null
           created_at: string
           destination_url: string
           expires_at: string | null
+          fallback_url: string | null
+          gates: Json
           id: string
           is_active: boolean
+          max_scans: number | null
           qr_options: Json
+          routing_rules: Json
           short_code: string
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          access_pin?: string | null
           created_at?: string
           destination_url: string
           expires_at?: string | null
+          fallback_url?: string | null
+          gates?: Json
           id?: string
           is_active?: boolean
+          max_scans?: number | null
           qr_options?: Json
+          routing_rules?: Json
           short_code: string
           title?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          access_pin?: string | null
           created_at?: string
           destination_url?: string
           expires_at?: string | null
+          fallback_url?: string | null
+          gates?: Json
           id?: string
           is_active?: boolean
+          max_scans?: number | null
           qr_options?: Json
+          routing_rules?: Json
           short_code?: string
           title?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      link_leads: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          email: string
+          id: string
+          link_id: string
+          name: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          email: string
+          id?: string
+          link_id: string
+          name?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          email?: string
+          id?: string
+          link_id?: string
+          name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_leads_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "dynamic_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       micro_pages: {
         Row: {
@@ -180,7 +236,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      link_scan_count: { Args: { _link_id: string }; Returns: number }
+      verify_link_pin: {
+        Args: { _pin: string; _short_code: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

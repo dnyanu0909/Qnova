@@ -1,6 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { QrRenderOptions } from "@/lib/qrRender";
 
+export interface DaypartRule {
+  start: string;
+  end: string;
+  url: string;
+}
+
+export interface RoutingRules {
+  devices?: { ios?: string; android?: string; desktop?: string };
+  dayparts?: DaypartRule[];
+}
+
+export interface LinkGates {
+  lead?: boolean;
+  pin?: boolean;
+}
+
 export interface DynamicLink {
   id: string;
   user_id: string;
@@ -10,9 +26,25 @@ export interface DynamicLink {
   is_active: boolean;
   expires_at: string | null;
   qr_options: Partial<QrRenderOptions>;
+  routing_rules: RoutingRules;
+  gates: LinkGates;
+  max_scans: number | null;
+  fallback_url: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export interface LinkLead {
+  id: string;
+  link_id: string;
+  name: string | null;
+  email: string;
+  device_type: string | null;
+  country: string | null;
+  city: string | null;
+  created_at: string;
+}
+
 
 export interface ScanEvent {
   id: string;
@@ -100,17 +132,83 @@ async function estimateLocation(): Promise<{ country: string | null; city: strin
   }
 }
 
+export type ResolvedLink = Pick<
+  DynamicLink,
+  "id" | "destination_url" | "title" | "is_active" | "expires_at" | "routing_rules" | "gates" | "max_scans" | "fallback_url"
+>;
+
 export async function resolveLink(code: string) {
   const { data, error } = await supabase
     .from("dynamic_links")
-    .select("id, destination_url, title")
+    .select("id, destination_url, title, is_active, expires_at, routing_rules, gates, max_scans, fallback_url")
     .eq("short_code", code)
-    .eq("is_active", true)
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .maybeSingle();
   if (error) throw error;
-  return data;
+  return (data ?? null) as unknown as ResolvedLink | null;
 }
+
+function minutes(value: string) {
+  const [h, m] = value.split(":").map((n) => parseInt(n, 10));
+  if (Number.isNaN(h)) return null;
+  return h * 60 + (Number.isNaN(m) ? 0 : m);
+}
+
+/** Picks the destination for the current device / time of day. */
+export function pickDestination(link: ResolvedLink, now = new Date()) {
+  const rules = link.routing_rules ?? {};
+  const { device } = detectClient();
+  const devices = rules.devices ?? {};
+  const key = device === "iOS" ? "ios" : device === "Android" ? "android" : device === "Tablet" ? "android" : "desktop";
+  const byDevice = devices[key as "ios" | "android" | "desktop"];
+  if (byDevice?.trim()) return { url: normalizeUrl(byDevice), reason: `device:${key}` };
+
+  const current = now.getHours() * 60 + now.getMinutes();
+  for (const part of rules.dayparts ?? []) {
+    if (!part?.url?.trim()) continue;
+    const start = minutes(part.start ?? "");
+    const end = minutes(part.end ?? "");
+    if (start === null || end === null) continue;
+    const active = start <= end ? current >= start && current < end : current >= start || current < end;
+    if (active) return { url: normalizeUrl(part.url), reason: `time:${part.start}-${part.end}` };
+  }
+
+  return { url: link.destination_url, reason: "default" };
+}
+
+export async function scanCount(linkId: string) {
+  const { data, error } = await supabase.rpc("link_scan_count", { _link_id: linkId });
+  if (error) return 0;
+  return (data as number) ?? 0;
+}
+
+export async function verifyPin(shortCode: string, pin: string) {
+  const { data, error } = await supabase.rpc("verify_link_pin", { _short_code: shortCode, _pin: pin });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function captureLead(input: { linkId: string; name: string; email: string }) {
+  const { device } = detectClient();
+  const { error } = await supabase.from("link_leads").insert({
+    link_id: input.linkId,
+    name: input.name.trim() || null,
+    email: input.email.trim(),
+    device_type: device,
+  } as never);
+  if (error) throw error;
+}
+
+export async function listLeads(linkIds: string[]) {
+  if (!linkIds.length) return [] as LinkLead[];
+  const { data, error } = await supabase
+    .from("link_leads")
+    .select("*")
+    .in("link_id", linkIds)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as LinkLead[];
+}
+
 
 export async function logScan(linkId: string) {
   const { device, os, browser } = detectClient();
