@@ -504,7 +504,54 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        <div className={tab === "leads" ? "glass-card p-5 sm:p-6 space-y-4" : "hidden"}>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-foreground">Captured leads</h2>
+            <button
+              onClick={downloadLeadsCsv}
+              disabled={leads.length === 0}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-2 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-40"
+            >
+              <Download className="w-3.5 h-3.5" /> Download CSV
+            </button>
+          </div>
+          {leads.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Turn on the email lead gate on a campaign — every visitor who unlocks it lands here.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <th className="py-2 pr-4 font-medium">Name</th>
+                    <th className="py-2 pr-4 font-medium">Email</th>
+                    <th className="py-2 pr-4 font-medium">Campaign</th>
+                    <th className="py-2 pr-4 font-medium">Device</th>
+                    <th className="py-2 font-medium">Captured</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => (
+                    <tr key={lead.id} className="border-t border-border">
+                      <td className="py-3 pr-4 text-foreground">{lead.name || "—"}</td>
+                      <td className="py-3 pr-4 text-foreground">{lead.email}</td>
+                      <td className="py-3 pr-4 text-xs text-muted-foreground">
+                        {links.find((l) => l.id === lead.link_id)?.title ?? "—"}
+                      </td>
+                      <td className="py-3 pr-4 text-xs text-muted-foreground">{lead.device_type || "—"}</td>
+                      <td className="py-3 text-xs text-muted-foreground">
+                        {new Date(lead.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </main>
+
 
       <EditLinkModal
         link={editing}
