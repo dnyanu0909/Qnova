@@ -26,6 +26,8 @@ import {
   QrCode,
   ScanLine,
   Trash2,
+  Users,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -35,11 +37,13 @@ import PrintExportDrawer from "@/components/dashboard/PrintExportDrawer";
 import {
   createLink,
   deleteLink,
+  listLeads,
   listLinks,
   listScans,
   shortUrl,
   updateLink,
   type DynamicLink,
+  type LinkLead,
   type ScanEvent,
 } from "@/lib/dynamicLinks";
 
