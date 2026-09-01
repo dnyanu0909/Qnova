@@ -26,6 +26,8 @@ import {
   QrCode,
   ScanLine,
   Trash2,
+  Users,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -35,11 +37,13 @@ import PrintExportDrawer from "@/components/dashboard/PrintExportDrawer";
 import {
   createLink,
   deleteLink,
+  listLeads,
   listLinks,
   listScans,
   shortUrl,
   updateLink,
   type DynamicLink,
+  type LinkLead,
   type ScanEvent,
 } from "@/lib/dynamicLinks";
 
@@ -60,6 +64,8 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<DynamicLink | null>(null);
   const [printing, setPrinting] = useState<DynamicLink | null>(null);
+  const [leads, setLeads] = useState<LinkLead[]>([]);
+  const [tab, setTab] = useState<"campaigns" | "leads">("campaigns");
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth", { replace: true });
@@ -71,7 +77,9 @@ export default function Dashboard() {
       try {
         const rows = await listLinks();
         setLinks(rows);
-        setScans(await listScans(rows.map((r) => r.id)));
+        const ids = rows.map((r) => r.id);
+        setScans(await listScans(ids));
+        setLeads(await listLeads(ids));
       } catch {
         toast.error("Could not load your campaigns.");
       } finally {
@@ -79,6 +87,7 @@ export default function Dashboard() {
       }
     })();
   }, [user]);
+
 
   const scansByLink = useMemo(() => {
     const map = new Map<string, ScanEvent[]>();
@@ -179,7 +188,33 @@ export default function Dashboard() {
     }
   };
 
+  const downloadLeadsCsv = () => {
+    const header = ["Name", "Email", "Campaign", "Device", "Country", "City", "Captured at"];
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = leads.map((lead) =>
+      [
+        lead.name ?? "",
+        lead.email,
+        links.find((l) => l.id === lead.link_id)?.title ?? "",
+        lead.device_type ?? "",
+        lead.country ?? "",
+        lead.city ?? "",
+        new Date(lead.created_at).toISOString(),
+      ]
+        .map((v) => esc(String(v)))
+        .join(","),
+    );
+    const blob = new Blob([[header.join(","), ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `qnova-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const remove = async (link: DynamicLink) => {
+
     try {
       await deleteLink(link.id);
       setLinks((prev) => prev.filter((l) => l.id !== link.id));
@@ -381,8 +416,28 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="glass-card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          {[
+            { id: "campaigns" as const, label: "Active campaigns", icon: QrCode },
+            { id: "leads" as const, label: `Captured leads (${leads.length})`, icon: Users },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
+                tab === t.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              <t.icon className="w-3.5 h-3.5" /> {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={tab === "campaigns" ? "glass-card p-5 sm:p-6 space-y-4" : "hidden"}>
           <h2 className="text-sm font-semibold text-foreground">Active campaigns</h2>
+
           {links.length === 0 ? (
             <p className="text-sm text-muted-foreground">Create your first tracked campaign above.</p>
           ) : (
@@ -475,7 +530,54 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        <div className={tab === "leads" ? "glass-card p-5 sm:p-6 space-y-4" : "hidden"}>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-foreground">Captured leads</h2>
+            <button
+              onClick={downloadLeadsCsv}
+              disabled={leads.length === 0}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-2 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-40"
+            >
+              <Download className="w-3.5 h-3.5" /> Download CSV
+            </button>
+          </div>
+          {leads.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Turn on the email lead gate on a campaign — every visitor who unlocks it lands here.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <th className="py-2 pr-4 font-medium">Name</th>
+                    <th className="py-2 pr-4 font-medium">Email</th>
+                    <th className="py-2 pr-4 font-medium">Campaign</th>
+                    <th className="py-2 pr-4 font-medium">Device</th>
+                    <th className="py-2 font-medium">Captured</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => (
+                    <tr key={lead.id} className="border-t border-border">
+                      <td className="py-3 pr-4 text-foreground">{lead.name || "—"}</td>
+                      <td className="py-3 pr-4 text-foreground">{lead.email}</td>
+                      <td className="py-3 pr-4 text-xs text-muted-foreground">
+                        {links.find((l) => l.id === lead.link_id)?.title ?? "—"}
+                      </td>
+                      <td className="py-3 pr-4 text-xs text-muted-foreground">{lead.device_type || "—"}</td>
+                      <td className="py-3 text-xs text-muted-foreground">
+                        {new Date(lead.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </main>
+
 
       <EditLinkModal
         link={editing}

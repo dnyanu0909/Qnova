@@ -266,7 +266,18 @@ export async function createLink(input: {
   return data as unknown as DynamicLink;
 }
 
-export async function updateLink(id: string, patch: Partial<Pick<DynamicLink, "title" | "destination_url" | "is_active" | "expires_at">>) {
+export interface LinkPatch
+  extends Partial<
+    Pick<
+      DynamicLink,
+      "title" | "destination_url" | "is_active" | "expires_at" | "routing_rules" | "gates" | "max_scans" | "fallback_url"
+    >
+  > {
+  access_pin?: string | null;
+}
+
+export async function updateLink(id: string, patch: LinkPatch) {
+
   const { data, error } = await supabase
     .from("dynamic_links")
     .update(patch as never)
