@@ -64,6 +64,8 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<DynamicLink | null>(null);
   const [printing, setPrinting] = useState<DynamicLink | null>(null);
+  const [leads, setLeads] = useState<LinkLead[]>([]);
+  const [tab, setTab] = useState<"campaigns" | "leads">("campaigns");
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth", { replace: true });
@@ -75,7 +77,9 @@ export default function Dashboard() {
       try {
         const rows = await listLinks();
         setLinks(rows);
-        setScans(await listScans(rows.map((r) => r.id)));
+        const ids = rows.map((r) => r.id);
+        setScans(await listScans(ids));
+        setLeads(await listLeads(ids));
       } catch {
         toast.error("Could not load your campaigns.");
       } finally {
@@ -83,6 +87,7 @@ export default function Dashboard() {
       }
     })();
   }, [user]);
+
 
   const scansByLink = useMemo(() => {
     const map = new Map<string, ScanEvent[]>();
