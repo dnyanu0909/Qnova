@@ -390,8 +390,28 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="glass-card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          {[
+            { id: "campaigns" as const, label: "Active campaigns", icon: QrCode },
+            { id: "leads" as const, label: `Captured leads (${leads.length})`, icon: Users },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
+                tab === t.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              <t.icon className="w-3.5 h-3.5" /> {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={tab === "campaigns" ? "glass-card p-5 sm:p-6 space-y-4" : "hidden"}>
           <h2 className="text-sm font-semibold text-foreground">Active campaigns</h2>
+
           {links.length === 0 ? (
             <p className="text-sm text-muted-foreground">Create your first tracked campaign above.</p>
           ) : (
