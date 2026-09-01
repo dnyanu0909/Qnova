@@ -188,7 +188,33 @@ export default function Dashboard() {
     }
   };
 
+  const downloadLeadsCsv = () => {
+    const header = ["Name", "Email", "Campaign", "Device", "Country", "City", "Captured at"];
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = leads.map((lead) =>
+      [
+        lead.name ?? "",
+        lead.email,
+        links.find((l) => l.id === lead.link_id)?.title ?? "",
+        lead.device_type ?? "",
+        lead.country ?? "",
+        lead.city ?? "",
+        new Date(lead.created_at).toISOString(),
+      ]
+        .map((v) => esc(String(v)))
+        .join(","),
+    );
+    const blob = new Blob([[header.join(","), ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `qnova-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const remove = async (link: DynamicLink) => {
+
     try {
       await deleteLink(link.id);
       setLinks((prev) => prev.filter((l) => l.id !== link.id));
