@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Download, QrCode, Copy, Check, FileCode, FileText, Ruler } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, QrCode, Copy, Check, FileCode, FileText, Ruler, Share2, Grid3x3, Image as ImageIcon } from "lucide-react";
 import { downloadBlob, svgToPngBlob } from "@/lib/qrRender";
 import { buildEps, buildPrintPdf, printGuidance, qrModuleCount } from "@/lib/printExport";
 import { toast } from "sonner";
@@ -40,6 +40,8 @@ export default function PreviewPanel({
 }: PreviewPanelProps) {
   const [copied, setCopied] = useState(false);
   const [dpiId, setDpiId] = useState<(typeof DPI_PRESETS)[number]["id"]>("1x");
+  const [view, setView] = useState<"matrix" | "mockup">("matrix");
+  const exportRef = useRef<HTMLDivElement>(null);
   const ready = Boolean(svg);
 
   const dpi = DPI_PRESETS.find((p) => p.id === dpiId) ?? DPI_PRESETS[0];
@@ -84,17 +86,60 @@ export default function PreviewPanel({
     }
   };
 
-  const copyImage = async () => {
+  const copyImage = useCallback(async () => {
+    if (!svg) return;
     try {
       const blob = await svgToPngBlob(svg, Math.min(exportSize, 1024));
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
       setCopied(true);
-      toast.success("QR code copied to clipboard");
+      toast.success("QR code copied to clipboard", {
+        description: "Clean PNG blob ready to paste anywhere.",
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Your browser blocked clipboard access.");
     }
+  }, [svg, exportSize]);
+
+  const shareAsset = async () => {
+    if (!svg) return;
+    try {
+      const blob = await svgToPngBlob(svg, Math.min(exportSize, 1024));
+      const file = new File([blob], "qnova-qr.png", { type: "image/png" });
+      const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+      if (nav.share && nav.canShare?.({ files: [file] })) {
+        await nav.share({ title: label || "QNova QR code", files: [file] });
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      toast.success("Temporary view link opened in a new tab.");
+    } catch {
+      toast.error("Sharing was cancelled or unavailable.");
+    }
   };
+
+  const downloadPngRef = useRef<(() => Promise<void>) | null>(null);
+  downloadPngRef.current = downloadPng;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod || !ready) return;
+      const key = e.key.toLowerCase();
+      if (key === "c" && e.shiftKey) {
+        e.preventDefault();
+        void copyImage();
+      } else if (key === "s" && !e.shiftKey) {
+        e.preventDefault();
+        exportRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        void downloadPngRef.current?.();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [copyImage, ready]);
 
   return (
     <div className="glass-card p-5 sm:p-6 lg:p-8 lg:sticky lg:top-24 lg:self-start">
@@ -112,16 +157,43 @@ export default function PreviewPanel({
           </div>
         )}
 
+        <div className="inline-flex rounded-full border border-border bg-secondary/40 p-1">
+          {([
+            { id: "matrix", label: "Matrix View", icon: <Grid3x3 className="w-3.5 h-3.5" /> },
+            { id: "mockup", label: "Live Mockup", icon: <ImageIcon className="w-3.5 h-3.5" /> },
+          ] as const).map((v) => (
+            <button
+              key={v.id}
+              onClick={() => setView(v.id)}
+              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                view === v.id
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {v.icon}
+              {v.label}
+            </button>
+          ))}
+        </div>
+
         <div className="w-full max-w-[340px] aspect-square rounded-2xl border border-border bg-muted/30 flex items-center justify-center overflow-hidden p-5">
-          {ready ? (
-            <img src={previewUrl} alt="Live QR code preview" className="w-full h-full object-contain" />
-          ) : (
+          {!ready ? (
             <div className="flex flex-col items-center gap-3 text-muted-foreground/50">
               <QrCode className="w-16 h-16" strokeWidth={1} />
               <span className="text-sm font-medium">No QR code yet</span>
             </div>
+          ) : view === "matrix" ? (
+            <img
+              src={previewUrl}
+              alt="Live QR code preview"
+              className="w-full h-full object-contain animate-in fade-in duration-300"
+            />
+          ) : (
+            <MockupStand previewUrl={previewUrl} label={label} />
           )}
         </div>
+
 
         <div className="w-full max-w-[340px]">
           <ScannabilityMeter result={shield} />
@@ -141,7 +213,7 @@ export default function PreviewPanel({
           </div>
         )}
 
-        <div className="w-full max-w-[340px] space-y-3">
+        <div ref={exportRef} className="w-full max-w-[340px] space-y-3">
           <div className="grid grid-cols-3 gap-2">
             {DPI_PRESETS.map((p) => (
               <button
@@ -176,14 +248,27 @@ export default function PreviewPanel({
             Vector exports use clean square modules with the ISO 4-module quiet zone preserved.
           </p>
 
-          <button
-            onClick={copyImage}
-            disabled={!ready}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
-          >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? "Copied!" : "Copy image to clipboard"}
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={copyImage}
+              disabled={!ready}
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? "Copied!" : "Copy image"}
+            </button>
+            <button
+              onClick={shareAsset}
+              disabled={!ready}
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
+            >
+              <Share2 className="w-4 h-4" /> Share asset
+            </button>
+          </div>
+          <p className="text-[11px] text-center text-muted-foreground">
+            Shortcuts: <kbd className="font-semibold text-foreground">⌘/Ctrl + Shift + C</kbd> copy ·{" "}
+            <kbd className="font-semibold text-foreground">⌘/Ctrl + S</kbd> download
+          </p>
         </div>
       </div>
     </div>
@@ -210,5 +295,27 @@ function ActionButton({
       {icon}
       {label}
     </button>
+  );
+}
+
+function MockupStand({ previewUrl, label }: { previewUrl: string; label: string }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative w-[78%]">
+        {/* matte acrylic table stand */}
+        <div className="relative rounded-[14px] bg-gradient-to-b from-card to-secondary/70 border border-border/70 px-4 pt-4 pb-5 shadow-[0_18px_35px_-18px_hsl(var(--foreground)/0.45)]">
+          <div className="pointer-events-none absolute inset-0 rounded-[14px] bg-gradient-to-tr from-foreground/[0.06] via-transparent to-background/50" />
+          <div className="rounded-lg bg-background p-2 shadow-inner">
+            <img src={previewUrl} alt="QR code shown on a table stand mockup" className="w-full aspect-square object-contain" />
+          </div>
+          <p className="mt-3 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {label ? label.slice(0, 22) : "Scan me"}
+          </p>
+        </div>
+        {/* stand base + reflection */}
+        <div className="mx-auto mt-1 h-2.5 w-[62%] rounded-b-[10px] bg-gradient-to-b from-border to-muted" />
+        <div className="mx-auto mt-1 h-6 w-[80%] rounded-[50%] bg-foreground/10 blur-md" />
+      </div>
+    </div>
   );
 }
