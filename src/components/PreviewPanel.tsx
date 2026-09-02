@@ -40,6 +40,8 @@ export default function PreviewPanel({
 }: PreviewPanelProps) {
   const [copied, setCopied] = useState(false);
   const [dpiId, setDpiId] = useState<(typeof DPI_PRESETS)[number]["id"]>("1x");
+  const [view, setView] = useState<"matrix" | "mockup">("matrix");
+  const exportRef = useRef<HTMLDivElement>(null);
   const ready = Boolean(svg);
 
   const dpi = DPI_PRESETS.find((p) => p.id === dpiId) ?? DPI_PRESETS[0];
