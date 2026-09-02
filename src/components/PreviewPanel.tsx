@@ -248,14 +248,27 @@ export default function PreviewPanel({
             Vector exports use clean square modules with the ISO 4-module quiet zone preserved.
           </p>
 
-          <button
-            onClick={copyImage}
-            disabled={!ready}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
-          >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? "Copied!" : "Copy image to clipboard"}
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={copyImage}
+              disabled={!ready}
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? "Copied!" : "Copy image"}
+            </button>
+            <button
+              onClick={shareAsset}
+              disabled={!ready}
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
+            >
+              <Share2 className="w-4 h-4" /> Share asset
+            </button>
+          </div>
+          <p className="text-[11px] text-center text-muted-foreground">
+            Shortcuts: <kbd className="font-semibold text-foreground">⌘/Ctrl + Shift + C</kbd> copy ·{" "}
+            <kbd className="font-semibold text-foreground">⌘/Ctrl + S</kbd> download
+          </p>
         </div>
       </div>
     </div>
