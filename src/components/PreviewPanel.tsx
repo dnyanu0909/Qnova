@@ -213,7 +213,7 @@ export default function PreviewPanel({
           </div>
         )}
 
-        <div className="w-full max-w-[340px] space-y-3">
+        <div ref={exportRef} className="w-full max-w-[340px] space-y-3">
           <div className="grid grid-cols-3 gap-2">
             {DPI_PRESETS.map((p) => (
               <button
