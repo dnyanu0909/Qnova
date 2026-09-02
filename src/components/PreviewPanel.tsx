@@ -120,6 +120,9 @@ export default function PreviewPanel({
     }
   };
 
+  const downloadPngRef = useRef<(() => Promise<void>) | null>(null);
+  downloadPngRef.current = downloadPng;
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
