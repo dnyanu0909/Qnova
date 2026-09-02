@@ -157,16 +157,43 @@ export default function PreviewPanel({
           </div>
         )}
 
+        <div className="inline-flex rounded-full border border-border bg-secondary/40 p-1">
+          {([
+            { id: "matrix", label: "Matrix View", icon: <Grid3x3 className="w-3.5 h-3.5" /> },
+            { id: "mockup", label: "Live Mockup", icon: <ImageIcon className="w-3.5 h-3.5" /> },
+          ] as const).map((v) => (
+            <button
+              key={v.id}
+              onClick={() => setView(v.id)}
+              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                view === v.id
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {v.icon}
+              {v.label}
+            </button>
+          ))}
+        </div>
+
         <div className="w-full max-w-[340px] aspect-square rounded-2xl border border-border bg-muted/30 flex items-center justify-center overflow-hidden p-5">
-          {ready ? (
-            <img src={previewUrl} alt="Live QR code preview" className="w-full h-full object-contain" />
-          ) : (
+          {!ready ? (
             <div className="flex flex-col items-center gap-3 text-muted-foreground/50">
               <QrCode className="w-16 h-16" strokeWidth={1} />
               <span className="text-sm font-medium">No QR code yet</span>
             </div>
+          ) : view === "matrix" ? (
+            <img
+              src={previewUrl}
+              alt="Live QR code preview"
+              className="w-full h-full object-contain animate-in fade-in duration-300"
+            />
+          ) : (
+            <MockupStand previewUrl={previewUrl} label={label} />
           )}
         </div>
+
 
         <div className="w-full max-w-[340px]">
           <ScannabilityMeter result={shield} />
