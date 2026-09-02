@@ -141,9 +141,6 @@ export default function PreviewPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [copyImage, ready]);
 
-  const downloadPngRef = useRef<(() => Promise<void>) | null>(null);
-  downloadPngRef.current = downloadPng;
-
   return (
     <div className="glass-card p-5 sm:p-6 lg:p-8 lg:sticky lg:top-24 lg:self-start">
       <div className="flex flex-col items-center gap-6">
