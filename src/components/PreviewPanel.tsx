@@ -297,3 +297,25 @@ function ActionButton({
     </button>
   );
 }
+
+function MockupStand({ previewUrl, label }: { previewUrl: string; label: string }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative w-[78%]">
+        {/* matte acrylic table stand */}
+        <div className="relative rounded-[14px] bg-gradient-to-b from-card to-secondary/70 border border-border/70 px-4 pt-4 pb-5 shadow-[0_18px_35px_-18px_hsl(var(--foreground)/0.45)]">
+          <div className="pointer-events-none absolute inset-0 rounded-[14px] bg-gradient-to-tr from-foreground/[0.06] via-transparent to-background/50" />
+          <div className="rounded-lg bg-background p-2 shadow-inner">
+            <img src={previewUrl} alt="QR code shown on a table stand mockup" className="w-full aspect-square object-contain" />
+          </div>
+          <p className="mt-3 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {label ? label.slice(0, 22) : "Scan me"}
+          </p>
+        </div>
+        {/* stand base + reflection */}
+        <div className="mx-auto mt-1 h-2.5 w-[62%] rounded-b-[10px] bg-gradient-to-b from-border to-muted" />
+        <div className="mx-auto mt-1 h-6 w-[80%] rounded-[50%] bg-foreground/10 blur-md" />
+      </div>
+    </div>
+  );
+}
