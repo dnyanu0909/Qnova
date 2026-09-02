@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Download, QrCode, Copy, Check, FileCode, FileText, Ruler } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, QrCode, Copy, Check, FileCode, FileText, Ruler, Share2, Grid3x3, Image as ImageIcon } from "lucide-react";
 import { downloadBlob, svgToPngBlob } from "@/lib/qrRender";
 import { buildEps, buildPrintPdf, printGuidance, qrModuleCount } from "@/lib/printExport";
 import { toast } from "sonner";
