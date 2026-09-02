@@ -86,17 +86,60 @@ export default function PreviewPanel({
     }
   };
 
-  const copyImage = async () => {
+  const copyImage = useCallback(async () => {
+    if (!svg) return;
     try {
       const blob = await svgToPngBlob(svg, Math.min(exportSize, 1024));
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
       setCopied(true);
-      toast.success("QR code copied to clipboard");
+      toast.success("QR code copied to clipboard", {
+        description: "Clean PNG blob ready to paste anywhere.",
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Your browser blocked clipboard access.");
     }
+  }, [svg, exportSize]);
+
+  const shareAsset = async () => {
+    if (!svg) return;
+    try {
+      const blob = await svgToPngBlob(svg, Math.min(exportSize, 1024));
+      const file = new File([blob], "qnova-qr.png", { type: "image/png" });
+      const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+      if (nav.share && nav.canShare?.({ files: [file] })) {
+        await nav.share({ title: label || "QNova QR code", files: [file] });
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      toast.success("Temporary view link opened in a new tab.");
+    } catch {
+      toast.error("Sharing was cancelled or unavailable.");
+    }
   };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod || !ready) return;
+      const key = e.key.toLowerCase();
+      if (key === "c" && e.shiftKey) {
+        e.preventDefault();
+        void copyImage();
+      } else if (key === "s" && !e.shiftKey) {
+        e.preventDefault();
+        exportRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        void downloadPngRef.current?.();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [copyImage, ready]);
+
+  const downloadPngRef = useRef<(() => Promise<void>) | null>(null);
+  downloadPngRef.current = downloadPng;
 
   return (
     <div className="glass-card p-5 sm:p-6 lg:p-8 lg:sticky lg:top-24 lg:self-start">
