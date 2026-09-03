@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,86 +6,92 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    /* Industrial studio — light (paper / graphite) */
+    --background: 220 14% 96%;
+    --foreground: 225 20% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 225 20% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 225 20% 8%;
 
-    --primary: 239 84% 67%;
+    --primary: 20 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 220 13% 92%;
+    --secondary-foreground: 225 20% 8%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 220 13% 92%;
+    --muted-foreground: 222 8% 42%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 20 100% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 239 84% 67%;
+    --border: 222 12% 84%;
+    --input: 222 12% 84%;
+    --ring: 20 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 220 14% 96%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 239 84% 67%;
+    --sidebar-primary: 20 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 92%;
+    --sidebar-accent-foreground: 225 20% 8%;
+    --sidebar-border: 222 12% 84%;
+    --sidebar-ring: 20 100% 50%;
 
-    --success: 142 71% 45%;
+    --success: 150 84% 38%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 42 100% 45%;
     --warning-foreground: 0 0% 100%;
+
+    --grid-line: 225 12% 74%;
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    /* Deep industrial charcoal */
+    --background: 228 17% 5%;
+    --foreground: 220 14% 93%;
 
-    --card: 224 47% 8%;
-    --card-foreground: 213 31% 91%;
+    --card: 226 18% 9%;
+    --card-foreground: 220 14% 93%;
 
-    --popover: 224 47% 8%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 226 18% 9%;
+    --popover-foreground: 220 14% 93%;
 
-    --primary: 239 84% 67%;
+    --primary: 20 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 47% 14%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 226 16% 13%;
+    --secondary-foreground: 220 14% 93%;
 
-    --muted: 223 47% 14%;
-    --muted-foreground: 218 11% 55%;
+    --muted: 226 16% 13%;
+    --muted-foreground: 220 9% 60%;
 
-    --accent: 223 47% 14%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 20 100% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 78% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 223 47% 18%;
-    --input: 223 47% 18%;
-    --ring: 239 84% 67%;
+    --border: 225 12% 18%;
+    --input: 225 12% 18%;
+    --ring: 20 100% 50%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 82 78% 52%;
+    --success-foreground: 228 17% 5%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 42 100% 55%;
+    --warning-foreground: 228 17% 5%;
+
+    --grid-line: 225 10% 22%;
   }
 }
 
@@ -98,14 +104,55 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.025em;
+  }
 }
 
 @layer utilities {
+  /* Solid instrument surfaces — no muddy blur */
   .glass-card {
-    @apply bg-card border border-border rounded-xl shadow-sm;
+    @apply bg-card border border-border rounded-xl;
   }
 
   .input-focus {
-    @apply focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary transition-all duration-200;
+    @apply focus:outline-none focus:ring-1 focus:ring-ring/60 focus:border-primary transition-all duration-150;
+  }
+
+  /* Compact micro-input */
+  .micro-input {
+    @apply w-full rounded-md border border-input bg-background/60 px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground/70 input-focus;
+  }
+
+  /* Technical readouts */
+  .metric {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .label-tech {
+    @apply metric text-[10px] uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  /* Blueprint dot-grid studio canvas */
+  .blueprint-grid {
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(hsl(var(--grid-line)) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: -1px -1px;
+  }
+
+  .scope-strip {
+    background-image: repeating-linear-gradient(
+      90deg,
+      hsl(var(--grid-line) / 0.9) 0 1px,
+      transparent 1px 8px
+    );
+  }
+
+  .accent-glow {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.4), 0 0 18px -4px hsl(var(--primary) / 0.55);
   }
 }
