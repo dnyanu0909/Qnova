@@ -28,8 +28,7 @@ const frameLabels = ["Scan Me", "Connect", "View Menu", "Free Wi-Fi"];
 
 const networks = ["instagram", "linkedin", "youtube", "github"];
 
-const inputClass =
-  "w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground input-focus";
+const inputClass = "micro-input";
 
 interface ControlsPanelProps {
   data: QRData;
@@ -52,16 +51,29 @@ export default function ControlsPanel({
   const setMenuItems = (items: MenuItem[]) => onUpdateData("menu", { ...data.menu, items });
 
   return (
-    <div className="glass-card p-5 sm:p-6 lg:p-8">
+    <div className="glass-card p-4 sm:p-5 lg:p-6">
+      <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">Inspector dock</h2>
+        <span className="label-tech">QNOVA / CONFIG</span>
+      </div>
       <Tabs defaultValue="content" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="content" className="gap-1.5 text-xs sm:text-sm">
+        <TabsList className="grid w-full grid-cols-3 rounded-full bg-secondary/60 p-0.5 h-9">
+          <TabsTrigger
+            value="content"
+            className="gap-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             <QrCode className="w-3.5 h-3.5" /> Content
           </TabsTrigger>
-          <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm">
+          <TabsTrigger
+            value="design"
+            className="gap-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             <Palette className="w-3.5 h-3.5" /> Design
           </TabsTrigger>
-          <TabsTrigger value="export" className="gap-1.5 text-xs sm:text-sm">
+          <TabsTrigger
+            value="export"
+            className="gap-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             <Settings2 className="w-3.5 h-3.5" /> Export
           </TabsTrigger>
         </TabsList>
@@ -469,9 +481,9 @@ export default function ControlsPanel({
               disabled={options.highRes}
               className="w-full accent-primary disabled:opacity-40"
             />
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>256px</span>
-              <span>2048px</span>
+            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+              <span className="metric">256px</span>
+              <span className="metric">2048px</span>
             </div>
           </Field>
 
@@ -522,7 +534,7 @@ function AvatarField({ value, onChange, label }: { value: string; onChange: (v: 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-foreground">{label}</label>
+      <label className="label-tech block">{label}</label>
       {children}
     </div>
   );
@@ -532,14 +544,14 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   return (
     <div className="space-y-1.5">
       <label className="text-xs font-medium text-muted-foreground">{label}</label>
-      <div className="flex items-center gap-2 rounded-lg border border-input bg-card px-2 py-1.5">
+      <div className="flex items-center gap-2 rounded-md border border-input bg-background/60 px-2 py-1.5">
         <input
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-7 h-7 rounded-md border border-input cursor-pointer p-0.5 bg-transparent"
         />
-        <span className="text-[11px] text-muted-foreground font-mono truncate">{value.toUpperCase()}</span>
+        <span className="metric text-[10px] text-muted-foreground truncate">{value.toUpperCase()}</span>
       </div>
     </div>
   );
@@ -558,13 +570,13 @@ function SegmentField<T extends string>({
 }) {
   return (
     <Field label={label}>
-      <div className="inline-flex w-full rounded-lg border border-border bg-secondary/50 p-1">
+      <div className="inline-flex w-full rounded-full border border-border bg-secondary/50 p-0.5">
         {items.map((i) => (
           <button
             key={i.value}
             onClick={() => onChange(i.value)}
-            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              value === i.value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            className={`flex-1 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] ${
+              value === i.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {i.label}
@@ -587,10 +599,10 @@ function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+    <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-background/40 px-3 py-2.5">
       <div className="space-y-0.5">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-[13px] font-medium text-foreground">{label}</p>
+        <p className="text-[11px] text-muted-foreground">{description}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>

@@ -20,24 +20,24 @@ export default function PresetBar({ value, onChange }: { value: QRType; onChange
             key={p.value}
             onClick={() => onChange(p.value)}
             aria-pressed={active}
-            className={`flex flex-col items-start gap-2 rounded-xl border p-3 sm:p-4 text-left transition-all duration-200 ${
+            className={`flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all duration-150 active:scale-[0.98] ${
               active
-                ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
-                : "border-border bg-card hover:border-primary/40 hover:-translate-y-0.5"
+                ? "border-primary bg-primary/10 accent-glow"
+                : "border-border bg-card hover:border-primary/50"
             }`}
           >
             <span
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+              className={`flex h-7 w-7 items-center justify-center rounded-md ${
                 active ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
               }`}
             >
               <p.icon className="h-4 w-4" />
             </span>
             <span className="space-y-0.5">
-              <span className={`block text-xs font-semibold leading-tight ${active ? "text-primary" : "text-foreground"}`}>
+              <span className={`block text-[12px] font-semibold leading-tight tracking-tight ${active ? "text-primary" : "text-foreground"}`}>
                 {p.label}
               </span>
-              <span className="block text-[11px] text-muted-foreground">{p.hint}</span>
+              <span className="block label-tech">{p.hint}</span>
             </span>
           </button>
         );

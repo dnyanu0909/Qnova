@@ -91,32 +91,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-border bg-card sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
               <QrCode className="w-4.5 h-4.5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground tracking-tight">QNova</span>
+            <span className="label-tech hidden md:block border-l border-border pl-2.5">PRECISION QR STUDIO</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground hidden sm:block">Fast & personalised QR codes</span>
+
             <Link
               to="/dashboard"
-              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+              className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-foreground hover:border-primary/50 active:scale-[0.98] transition-all"
             >
               <BarChart3 className="w-3.5 h-3.5" /> Dashboard
             </Link>
             <button
               onClick={() => setScanOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+              className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-foreground hover:border-primary/50 active:scale-[0.98] transition-all"
             >
               <ScanLine className="w-3.5 h-3.5" /> Scan QR
             </button>
             <VaultDrawer entries={vault} onEntriesChange={setVault} onRestore={restore} />
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className="w-8 h-8 rounded-md border border-border bg-background/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Toggle dark mode"
             >
               <Sun className="w-4 h-4 hidden dark:block" />
@@ -136,7 +137,7 @@ const Index = () => {
 
         <div id="studio" className="text-center mb-8 lg:mb-12 scroll-mt-24">
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
-            {mode === "qr" ? "Generate QR Codes" : mode === "card" ? "Digital Contact / Link-in-Bio" : "Batch QR Production"}
+            {mode === "qr" ? "Precision QR Studio" : mode === "card" ? "Digital Contact / Link-in-Bio" : "Batch QR Production"}
           </h1>
           <p className="mt-2 text-muted-foreground text-base lg:text-lg max-w-lg mx-auto">
             {mode === "qr"
@@ -146,11 +147,11 @@ const Index = () => {
                 : "Upload a CSV and generate a whole batch of styled QR codes in one go."}
           </p>
 
-          <div className="mt-6 inline-flex rounded-xl border border-border bg-card p-1">
+          <div className="mt-6 inline-flex rounded-full border border-border bg-secondary/50 p-0.5">
             <button
               onClick={() => setMode("qr")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === "qr" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] ${
+                mode === "qr" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <QrCode className="w-4 h-4" />
@@ -158,8 +159,8 @@ const Index = () => {
             </button>
             <button
               onClick={() => setMode("card")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === "card" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] ${
+                mode === "card" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <IdCard className="w-4 h-4" />
@@ -167,8 +168,8 @@ const Index = () => {
             </button>
             <button
               onClick={() => setMode("batch")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === "batch" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-[0.98] ${
+                mode === "batch" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Layers className="w-4 h-4" />
@@ -195,7 +196,7 @@ const Index = () => {
               onApplyTemplate={applyTemplate} />
 
             <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-              <div className="glass-card p-5 sm:p-6 lg:p-8 flex justify-center">
+              <div className="glass-card p-5 sm:p-6 flex justify-center">
                 <DestinationPreview data={data} />
               </div>
 
@@ -214,7 +215,7 @@ const Index = () => {
               <button
                 onClick={saveToVault}
                 disabled={!svg}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-secondary transition-colors disabled:opacity-40"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border border-border bg-card text-foreground font-semibold text-[11px] uppercase tracking-wide hover:border-primary/50 active:scale-[0.98] transition-all disabled:opacity-40"
               >
                 <Archive className="w-4 h-4" /> Save to Vault
               </button>
