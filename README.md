@@ -36,18 +36,18 @@ QNova explicitly isolates client-side vector synthesis from cloud telemetry. The
 graph TD
     User([User Device / Designer]) -->|Selects Workflow| Choice{Code Type}
     
-    subgraph Zero-Trust Static Engine (Client-Only)
+    subgraph StaticEngine["Zero-Trust Static Engine (Client-Only)"]
         Choice -->|Static / Offline| LocalGen[Browser WebWorker Matrix Engine]
-        LocalGen --> Preflight[ISO/IEC 15415 & Quiet Zone Verifier]
-        Preflight --> RawExport[Vector SVG / EPS / 300+ DPI PDF]
+        LocalGen --> Preflight["ISO/IEC 15415 & Quiet Zone Verifier"]
+        Preflight --> RawExport["Vector SVG / EPS / 300+ DPI PDF"]
     end
 
-    subgraph Dynamic Telemetry Engine (Cloud)
-        Choice -->|Dynamic Managed| SupaAuth[Supabase DB / Short Hash Registry]
-        SupaAuth --> EdgeRoute[Vercel Edge /r/:slug]
+    subgraph DynamicEngine["Dynamic Telemetry Engine (Cloud)"]
+        Choice -->|Dynamic Managed| SupaAuth["Supabase DB / Short Hash Registry"]
+        SupaAuth --> EdgeRoute["Vercel Edge /r/:slug"]
         Scanner([Physical Scanner]) --> EdgeRoute
         EdgeRoute -->|Async Geo/Device Log| Telemetry[(Scan Telemetry Database)]
-        EdgeRoute -->|HTTP 302 Found| Destination[Target Destination / Micro-Page]
+        EdgeRoute -->|HTTP 302 Found| Destination["Target Destination / Micro-Page"]
     end
 ```
 
