@@ -202,5 +202,5 @@ QNova is optimized for zero-config deployment on Vercel:
 
 Distributed under the **MIT License**. See `LICENSE` for details.
 
-* **Author**: [Dnyaneshwar (dnyanu0909)](https://github.com/dnyanu0909)
+* **Author**: [(dnyanu0909)](https://github.com/dnyanu0909)
 * **Live Application**: [qnova-black.vercel.app](https://qnova-black.vercel.app/)
