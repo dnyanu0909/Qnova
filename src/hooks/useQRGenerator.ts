@@ -141,10 +141,42 @@ export function buildQRString(data: QRData): string {
   }
 }
 
+const DRAFT_KEY = "qnova:designer-draft:v1";
+
+function loadDraft(): { data: QRData; options: QROptions; templateId: string } | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    return {
+      data: { ...initialData, ...p.data },
+      options: { ...initialOptions, ...p.options },
+      templateId: p.templateId ?? "minimal",
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function useQRGenerator() {
-  const [data, setData] = useState<QRData>(initialData);
-  const [options, setOptions] = useState<QROptions>(initialOptions);
-  const [templateId, setTemplateId] = useState<string>("minimal");
+  const saved = useMemo(() => loadDraft(), []);
+  const [data, setData] = useState<QRData>(saved?.data ?? initialData);
+  const [options, setOptions] = useState<QROptions>(saved?.options ?? initialOptions);
+  const [templateId, setTemplateId] = useState<string>(saved?.templateId ?? "minimal");
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ data, options, templateId }));
+      } catch {
+        // quota exceeded (large logo) — retry without images
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({ data, options: { ...options, logoDataUrl: null }, templateId }));
+        } catch { /* ignore */ }
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [data, options, templateId]);
   const [error, setError] = useState<string>("");
 
   const updateData = useCallback(<K extends keyof QRData>(key: K, value: QRData[K]) => {
