@@ -235,6 +235,12 @@ const Index = () => {
         )}
       </main>
 
+      <footer className="border-t border-border py-6 px-4">
+        <p className="metric text-[10px] tracking-wide text-center text-muted-foreground max-w-2xl mx-auto">
+          <span className="text-primary">●</span> Built with offline-first ISO/IEC 15415 standards. Static codes generated on QNova are permanent and never expire.
+        </p>
+      </footer>
+
       <ScannerModal open={scanOpen} onOpenChange={setScanOpen} />
     </div>);
 

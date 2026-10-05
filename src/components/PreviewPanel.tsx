@@ -86,6 +86,19 @@ export default function PreviewPanel({
     downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), "qnova-qr.svg");
   };
 
+  const copySvg = async () => {
+    if (!svg) return;
+    try {
+      await navigator.clipboard.writeText(svg);
+      toast.success("Copied to clipboard!", {
+        description: "Vector SVG markup copied.",
+        icon: <Check className="w-4 h-4 text-primary" />,
+      });
+    } catch {
+      toast.error("Your browser blocked clipboard access.");
+    }
+  };
+
   const downloadEps = () => {
     try {
       const eps = buildEps(content, fgColor, bgColor);
@@ -111,8 +124,9 @@ export default function PreviewPanel({
       const blob = await svgToPngBlob(svg, Math.min(exportSize, 1024));
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
       setCopied(true);
-      toast.success("QR code copied to clipboard", {
-        description: "Clean PNG blob ready to paste anywhere.",
+      toast.success("Copied to clipboard!", {
+        description: "Clean PNG ready to paste anywhere.",
+        icon: <Check className="w-4 h-4 text-primary" />,
       });
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -308,7 +322,14 @@ export default function PreviewPanel({
             VECTOR EXPORTS · SQUARE MODULES · ISO 4-MODULE QUIET ZONE
           </p>
 
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              onClick={copySvg}
+              disabled={!ready}
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-border bg-background/40 text-foreground font-medium text-[13px] hover:border-primary/50 active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              <FileCode className="w-3.5 h-3.5" /> Copy SVG
+            </button>
             <button
               onClick={copyImage}
               disabled={!ready}
